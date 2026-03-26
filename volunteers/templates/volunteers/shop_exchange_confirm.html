@@ -1,0 +1,33 @@
+{% extends 'volunteers/base.html' %}
+{% load static %}
+
+{% block title %}确认兑换 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">确认兑换</h4>
+                </div>
+                <div class="card-body">
+                    <h5>{{ item.name }}</h5>
+                    <p>{{ item.description }}</p>
+                    <p>所需积分：<strong>{{ item.points_required }}</strong></p>
+                    <p>您的可用积分：<strong>{{ points.balance }}</strong></p>
+                    {% if points.balance >= item.points_required %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success w-100">确认兑换</button>
+                        </form>
+                    {% else %}
+                        <div class="alert alert-danger">积分不足，无法兑换</div>
+                        <a href="{% url 'shop_index' %}" class="btn btn-secondary w-100">返回商城</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

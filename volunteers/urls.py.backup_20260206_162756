@@ -1,0 +1,37 @@
+﻿from django.urls import path
+from .views import (
+    index,
+    RegisterView,
+    SendVerificationCodeView,
+    LoginWithCodeView,
+    profile_verification,
+    verification_status,
+    activity_list,
+    activity_detail,
+    apply_activity,
+    login_view,
+    logout_view,
+    dashboard
+)
+
+urlpatterns = [
+    # 首页
+    path('', index, name='index'),
+    
+    # 用户认证相关
+    path('register/', RegisterView.as_view(), name='register'),
+    path('send-code/', SendVerificationCodeView.as_view(), name='send_code'),
+    path('login/code/', LoginWithCodeView.as_view(), name='login_with_code'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('dashboard/', dashboard, name='dashboard'),
+    
+    # 身份认证相关
+    path('profile/verification/', profile_verification, name='profile_verification'),
+    path('verification/status/', verification_status, name='verification_status'),
+    
+    # 活动相关
+    path('activities/', activity_list, name='activity_list'),
+    path('activities/<int:activity_id>/', activity_detail, name='activity_detail'),
+    path('activities/<int:activity_id>/apply/', apply_activity, name='apply_activity'),
+]

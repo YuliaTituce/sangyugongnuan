@@ -1,0 +1,171 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}活动管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="section-title mb-0" style="border-bottom: none;">
+        <i class="fas fa-calendar-alt"></i> 活动管理
+    </div>
+    <div>
+        <span class="text-muted">共 {{ total_count }} 个活动</span>
+    </div>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">搜索</label>
+                <input type="text" name="q" class="form-control" placeholder="活动标题/描述" value="{{ search_query }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">状态</label>
+                <select name="status" class="form-select">
+                    <option value="">全部</option>
+                    <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>草稿</option>
+                    <option value="published" {% if status_filter == 'published' %}selected{% endif %}>已发布</option>
+                    <option value="ongoing" {% if status_filter == 'ongoing' %}selected{% endif %}>进行中</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>已完成</option>
+                    <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>已取消</option>
+                    <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>已拒绝</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">组织者</label>
+                <select name="organizer" class="form-select">
+                    <option value="">全部</option>
+                    {% for org in organizers %}
+                    <option value="{{ org.id }}" {% if organizer_filter == org.id|stringformat:"s" %}selected{% endif %}>
+                        {{ org.real_name|default:org.user.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> 筛选
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 批量操作表单 -->
+<form method="post" action="{% url 'batch_action_activities' %}" id="batchForm">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">活动列表</h5>
+            <div>
+                <select name="action" class="form-select form-select-sm d-inline-block w-auto me-2">
+                    <option value="publish">批量发布</option>
+                    <option value="cancel">批量取消</option>
+                    <option value="delete">批量删除</option>
+                </select>
+                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('确定执行批量操作？')">执行</button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="30"><input type="checkbox" id="selectAll"></th>
+                            <th>ID</th>
+                            <th>活动标题</th>
+                            <th>组织者</th>
+                            <th>时间</th>
+                            <th>地点</th>
+                            <th>状态</th>
+                            <th>报名情况</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in page_obj %}
+                        <tr>
+                            <td><input type="checkbox" name="selected_activities" value="{{ activity.id }}"></td>
+                            <td>{{ activity.id }}</td>
+                            <td>
+                                <a href="{% url 'admin_activity_detail' activity.id %}">{{ activity.title|truncatechars:30 }}</a>
+                            </td>
+                            <td>{{ activity.organizer.real_name|default:activity.organizer.user.username }}</td>
+                            <td>
+                                {{ activity.start_time|date:"m-d H:i" }}<br>
+                                <small class="text-muted">{{ activity.end_time|date:"m-d H:i" }}</small>
+                            </td>
+                            <td>{{ activity.location|truncatechars:20 }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if activity.status == 'published' %}bg-success
+                                    {% elif activity.status == 'draft' %}bg-secondary
+                                    {% elif activity.status == 'ongoing' %}bg-primary
+                                    {% elif activity.status == 'completed' %}bg-info
+                                    {% elif activity.status == 'cancelled' %}bg-danger
+                                    {% elif activity.status == 'rejected' %}bg-dark
+                                    {% else %}bg-light text-dark{% endif %}">
+                                    {{ activity.get_status_display }}
+                                </span>
+                                {% if not activity.is_approved %}
+                                <span class="badge bg-warning">待审核</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ activity.current_participants }}/{{ activity.max_participants }}
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_activity_detail' activity.id %}" class="btn btn-sm btn-outline-primary">
+                                    详情
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分页 -->
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&status={{ status_filter }}&organizer={{ organizer_filter }}">上一页</a></li>
+                    {% endif %}
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if i == page_obj.number %}
+                        <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                        {% else %}
+                        <li class="page-item"><a class="page-link" href="?page={{ i }}&q={{ search_query }}&status={{ status_filter }}&organizer={{ organizer_filter }}">{{ i }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&status={{ status_filter }}&organizer={{ organizer_filter }}">下一页</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+            {% else %}
+            <p class="text-muted text-center py-4">暂无活动数据</p>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+    // 全选/取消全选
+    document.addEventListener('DOMContentLoaded', function() {
+        const selectAll = document.getElementById('selectAll');
+        if (selectAll) {
+            selectAll.addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('input[name="selected_activities"]');
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            });
+        }
+    });
+</script>
+{% endblock %}

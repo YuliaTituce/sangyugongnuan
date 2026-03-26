@@ -1,0 +1,68 @@
+{% extends 'volunteers/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}积分商品管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-gift"></i> 积分商品管理
+    <a href="{% url 'shop_item_create' %}" class="btn btn-primary btn-sm ms-auto">
+        <i class="fas fa-plus"></i> 新增商品
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>商品图片</th>
+                    <th>商品名称</th>
+                    <th>所需积分</th>
+                    <th>库存</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" width="50" height="50" style="object-fit: cover;">
+                        {% else %}
+                            <span class="text-muted">无图</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.points_required }}</td>
+                    <td>{{ item.stock|default:"∞" }}</td>
+                    <td>
+                        {% if item.is_active %}
+                            <span class="badge bg-success">上架</span>
+                        {% else %}
+                            <span class="badge bg-secondary">下架</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.created_at|date:"Y-m-d H:i" }}</td>
+                    <td>
+                        <a href="{% url 'shop_item_edit' item.id %}" class="btn btn-sm btn-outline-primary">编辑</a>
+                        <form method="post" action="{% url 'shop_item_delete' item.id %}" style="display:inline;" onsubmit="return confirm('确定删除该商品吗？');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">删除</button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-4">暂无商品</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

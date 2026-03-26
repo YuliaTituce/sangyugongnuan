@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>选择身份类型 - 桑榆共暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .selection-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .options-container {
+            padding: 40px;
+        }
+        
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .option-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid #eee;
+            cursor: pointer;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: #4facfe;
+        }
+        
+        .option-card.selected {
+            border-color: #4facfe;
+            background: #f0f9ff;
+        }
+        
+        .option-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #4facfe;
+        }
+        
+        .option-card h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .option-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .requirements {
+            text-align: left;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #777;
+        }
+        
+        .requirements h4 {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .requirements ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .requirements li {
+            margin-bottom: 5px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .requirements li:before {
+            content: "•";
+            color: #4facfe;
+            position: absolute;
+            left: 0;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .btn-select {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-select:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+        
+        .btn-skip {
+            background: transparent;
+            color: #666;
+            border: none;
+            padding: 15px 30px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+            display: inline-block;
+            margin-left: 20px;
+        }
+        
+        .btn-skip:hover {
+            color: #4facfe;
+        }
+        
+        .form-group {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .hidden-input {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                padding: 30px 20px;
+            }
+            
+            .options-container {
+                padding: 30px 20px;
+            }
+            
+            .btn-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn-skip {
+                margin-left: 0;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="selection-container">
+        <div class="header">
+            <h1>欢迎加入桑榆共暖！</h1>
+            <p>请选择您的身份类型，以便为您提供更精准的服务。您也可以暂时跳过此步骤。</p>
+        </div>
+        
+        <div class="options-container">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="POST" action="{% url 'role_selection' %}" id="roleForm">
+                {% csrf_token %}
+                
+                <div class="options-grid">
+                    <!-- 志愿者选项 -->
+                    <div class="option-card" onclick="selectRole('volunteer')" id="volunteerCard">
+                        <div class="option-icon">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <h3>志愿者</h3>
+                        <p>我想要参与志愿服务活动，为社会贡献自己的力量。</p>
+                        
+                        <div class="requirements">
+                            <h4>需要准备的材料：</h4>
+                            <ul>
+                                <li>真实姓名和身份证号</li>
+                                <li>联系方式及住址</li>
+                                <li>身份证明文件照片</li>
+                                <li>志愿服务经历（可选）</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- 活动策划者选项 -->
+                    <div class="option-card" onclick="selectRole('organizer')" id="organizerCard">
+                        <div class="option-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h3>活动策划者</h3>
+                        <p>我想要发布和管理志愿服务活动，组织志愿者参与。</p>
+                        
+                        <div class="requirements">
+                            <h4>需要准备的材料：</h4>
+                            <ul>
+                                <li>组织/机构名称</li>
+                                <li>组织类型和证明文件</li>
+                                <li>负责人身份信息</li>
+                                <li>联系方式及地址</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <input type="hidden" name="role" id="selectedRole" value="">
+                </div>
+                
+                <div class="btn-container">
+                    <button type="submit" class="btn-select" id="submitBtn" disabled>
+                        确认选择
+                    </button>
+                    <button type="button" class="btn-skip" onclick="selectRole('skip')">
+                        暂时跳过，以后再完善
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 当前选中的角色
+        let selectedRole = '';
+        
+        function selectRole(role) {
+            selectedRole = role;
+            document.getElementById('selectedRole').value = role;
+            
+            // 更新卡片选中状态
+            document.getElementById('volunteerCard').classList.remove('selected');
+            document.getElementById('organizerCard').classList.remove('selected');
+            
+            if (role === 'volunteer') {
+                document.getElementById('volunteerCard').classList.add('selected');
+                document.getElementById('submitBtn').textContent = '成为志愿者';
+            } else if (role === 'organizer') {
+                document.getElementById('organizerCard').classList.add('selected');
+                document.getElementById('submitBtn').textContent = '成为活动策划者';
+            } else if (role === 'skip') {
+                // 直接提交跳过表单
+                document.getElementById('selectedRole').value = 'skip';
+                document.getElementById('roleForm').submit();
+                return;
+            }
+            
+            // 启用提交按钮
+            document.getElementById('submitBtn').disabled = false;
+        }
+        
+        // 初始化：如果没有选择，禁用提交按钮
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('submitBtn').disabled = true;
+        });
+    </script>
+</body>
+</html>

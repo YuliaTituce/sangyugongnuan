@@ -1,0 +1,262 @@
+<!-- E:\sygn\volunteers\templates\volunteers\apply_activity.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报名活动 - 桑榆共暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .activity-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .activity-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .activity-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            color: #666;
+            margin-top: 15px;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+        }
+        
+        textarea.form-control {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+        }
+        
+        .btn-back {
+            background: #f5f5f5;
+            color: #666;
+            margin-right: 15px;
+        }
+        
+        .btn-back:hover {
+            background: #e9e9e9;
+        }
+        
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .form-error {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .user-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .user-info h3 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .activity-summary,
+            .form-card {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>报名活动</h1>
+        <p>填写报名信息，加入志愿服务活动</p>
+    </div>
+    
+    <div class="container">
+        <div class="messages">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        </div>
+        
+        <div class="activity-summary">
+            <h2 class="activity-title">{{ activity.title }}</h2>
+            
+            <div class="activity-meta">
+                <div class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    开始时间：{{ activity.start_time|date:"Y年m月d日 H:i" }}
+                </div>
+                
+                <div class="meta-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    活动地点：{{ activity.location }}
+                </div>
+                
+                <div class="meta-item">
+                    <i class="fas fa-users"></i>
+                    剩余名额：{{ activity.max_participants|add:"0"|add:activity.current_participants }}人
+                </div>
+            </div>
+        </div>
+        
+        <div class="user-info">
+            <h3>您的信息</h3>
+            <p>姓名：{{ user.profile.real_name|default:user.username }}</p>
+            <p>联系电话：{{ user.profile.phone_number|default:"未填写" }}</p>
+        </div>
+        
+        <div class="form-card">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label class="form-label">{{ form.application_notes.label }}</label>
+                    {{ form.application_notes }}
+                    <div class="form-text">请说明您为什么想参加这个活动，以及您能为此活动做些什么</div>
+                    {% if form.application_notes.errors %}
+                        <div class="form-error">{{ form.application_notes.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">{{ form.experience_expectation.label }}</label>
+                    {{ form.experience_expectation }}
+                    <div class="form-text">您希望通过这次活动获得什么经验或收获？</div>
+                    {% if form.experience_expectation.errors %}
+                        <div class="form-error">{{ form.experience_expectation.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <a href="{% url 'activity_detail' activity.id %}" class="btn btn-back">返回活动详情</a>
+                    <button type="submit" class="btn">提交报名申请</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

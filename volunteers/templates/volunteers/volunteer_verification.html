@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>志愿者认证 - 桑榆共暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .verification-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .verification-header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .verification-header h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .verification-header p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .progress-steps:before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .step.active .step-circle {
+            background: #4CAF50;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .verification-form {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .form-label.required:after {
+            content: ' *';
+            color: #f44336;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+        }
+        
+        .form-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-upload:hover {
+            border-color: #4CAF50;
+        }
+        
+        .file-upload input {
+            display: none;
+        }
+        
+        .file-upload-label {
+            display: block;
+            color: #666;
+        }
+        
+        .file-upload-label i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #4CAF50;
+        }
+        
+        .terms-agreement {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 30px 0;
+        }
+        
+        .terms-agreement label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+        
+        .terms-agreement input[type="checkbox"] {
+            margin-right: 10px;
+            margin-top: 4px;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-submit {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #45a049;
+        }
+        
+        .btn-back {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .btn-back:hover {
+            background: #e9e9e9;
+        }
+        
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 10px;
+            }
+            
+            .verification-header,
+            .verification-form {
+                padding: 20px;
+            }
+            
+            .progress-steps {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .progress-steps:before {
+                display: none;
+            }
+            
+            .step {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            
+            .step-circle {
+                margin: 0 15px 0 0;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="verification-container">
+        <div class="verification-header">
+            <h1>志愿者身份认证</h1>
+            <p>为了保障志愿服务活动的安全和质量，请如实填写以下信息。您的信息将严格保密。</p>
+            
+            <div class="progress-steps">
+                <div class="step">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">选择身份</div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">填写信息</div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">等待审核</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="verification-form">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- 基本信息 -->
+                <div class="form-section">
+                    <h2 class="section-title">基本信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.real_name.label }}</label>
+                        {{ form.real_name }}
+                        {% if form.real_name.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.real_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.phone_number.label }}</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.phone_number.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.id_card_number.label }}</label>
+                        {{ form.id_card_number }}
+                        {% if form.id_card_number.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.id_card_number.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.current_address.label }}</label>
+                        {{ form.current_address }}
+                        {% if form.current_address.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.current_address.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 紧急联系人 -->
+                <div class="form-section">
+                    <h2 class="section-title">紧急联系人信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.emergency_contact.label }}</label>
+                        {{ form.emergency_contact }}
+                        <div class="form-text">用于紧急情况联系</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.emergency_phone.label }}</label>
+                        {{ form.emergency_phone }}
+                    </div>
+                </div>
+                
+                <!-- 志愿者信息 -->
+                <div class="form-section">
+                    <h2 class="section-title">志愿者信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.volunteer_experience.label }}</label>
+                        {{ form.volunteer_experience }}
+                        <div class="form-text">请描述您之前的志愿服务经历，如无请填写"无"</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.skills.label }}</label>
+                        {{ form.skills }}
+                        <div class="form-text">请描述您的专业技能，这将有助于匹配适合您的志愿活动</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.available_time.label }}</label>
+                        {{ form.available_time }}
+                        <div class="form-text">请描述您通常可以参与志愿服务的时间</div>
+                    </div>
+                </div>
+                
+                <!-- 文件上传 -->
+                <div class="form-section">
+                    <h2 class="section-title">身份证明文件</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.identity_document.label }}</label>
+                        <div class="file-upload" onclick="document.getElementById('id_identity_document').click()">
+                            <input type="file" name="identity_document" id="id_identity_document" accept="image/*,.pdf">
+                            <label class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div>点击上传身份证明文件</div>
+                                <div class="form-text">支持JPG、PNG、PDF格式，最大5MB</div>
+                            </label>
+                        </div>
+                        {% if form.identity_document.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.identity_document.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 条款同意 -->
+                <div class="terms-agreement">
+                    <label>
+                        {{ form.agree_terms }}
+                        <div>
+                            {{ form.agree_terms.label }}
+                            <div class="form-text">
+                                我们承诺保护您的个人信息安全，详细信息请查看
+                                <a href="#" style="color: #4CAF50;">《个人信息保护政策》</a>
+                            </div>
+                        </div>
+                    </label>
+                    {% if form.agree_terms.errors %}
+                        <div class="form-text" style="color: #f44336; margin-top: 10px;">
+                            {{ form.agree_terms.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="btn-container">
+                    <a href="{% url 'role_selection' %}" class="btn-back">
+                        返回重新选择
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> 提交认证申请
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 文件上传预览
+        document.getElementById('id_identity_document').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = file.size / 1024 / 1024; // MB
+                if (fileSize > 5) {
+                    alert('文件大小不能超过5MB');
+                    e.target.value = '';
+                }
+            }
+        });
+        
+        // 表单验证
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const terms = document.querySelector('input[name="agree_terms"]');
+            if (!terms.checked) {
+                e.preventDefault();
+                alert('请同意个人信息保护政策');
+                return false;
+            }
+            return true;
+        });
+    </script>
+</body>
+</html>

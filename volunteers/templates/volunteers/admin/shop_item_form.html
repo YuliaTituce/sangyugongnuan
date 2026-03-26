@@ -1,0 +1,53 @@
+{% extends 'volunteers/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}{{ action }}商品 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-gift"></i> {{ action }}商品
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label required">商品名称</label>
+                <input type="text" name="name" class="form-control" value="{{ item.name|default:'' }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label required">商品描述</label>
+                <textarea name="description" class="form-control" rows="4" required>{{ item.description|default:'' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label required">所需积分</label>
+                <input type="number" name="points_required" class="form-control" value="{{ item.points_required|default:'' }}" min="1" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">库存</label>
+                <input type="number" name="stock" class="form-control" value="{{ item.stock|default:0 }}" min="-1">
+                <div class="form-text">-1 表示无限库存</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">商品图片</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+                {% if item.image %}
+                    <div class="mt-2">
+                        <img src="{{ item.image.url }}" width="100">
+                        <p class="text-muted">当前图片</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3 form-check">
+                <input type="checkbox" name="is_active" class="form-check-input" id="isActive" {% if item.is_active or not item %}checked{% endif %}>
+                <label class="form-check-label" for="isActive">立即上架</label>
+            </div>
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <a href="{% url 'shop_item_list' %}" class="btn btn-secondary">取消</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

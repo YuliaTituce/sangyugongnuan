@@ -1,0 +1,208 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}内容管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-newspaper"></i> 内容管理
+</div>
+
+<!-- 公告管理卡片 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">公告管理</h5>
+    </div>
+    <div class="card-body">
+        <!-- 创建公告表单 -->
+        <form method="POST" class="mb-4">
+            {% csrf_token %}
+            <input type="hidden" name="create_announcement" value="1">
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">公告标题</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">状态</label>
+                    <div class="form-check">
+                        <input type="checkbox" name="is_published" class="form-check-input" id="publishCheck">
+                        <label class="form-check-label" for="publishCheck">立即发布</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">公告内容</label>
+                <textarea name="content" class="form-control" rows="5" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">创建公告</button>
+        </form>
+        
+        <!-- 公告列表 -->
+        <h6>现有公告</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>创建者</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for announcement in announcements %}
+                    <tr>
+                        <td>{{ announcement.title }}</td>
+                        <td>
+                            {% if announcement.is_published %}
+                            <span class="badge bg-success">已发布</span>
+                            {% else %}
+                            <span class="badge bg-secondary">草稿</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ announcement.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ announcement.created_by.username }}</td>
+                        <td>
+    <                       <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary">编辑</a>
+        
+                                {% if announcement.is_published %}
+                                <form method="POST" style="display:inline;">
+                                    {% csrf_token %}
+           			    <input type="hidden" name="unpublish_announcement" value="1">
+           			    <input type="hidden" name="announcement_id" value="{{ announcement.id }}">
+           			    <button type="submit" class="btn btn-outline-warning">取消发布</button>
+       			 	</form>
+       			 	{% else %}
+       			 	<form method="POST" style="display:inline;">
+           			    {% csrf_token %}
+            		            <input type="hidden" name="publish_announcement" value="1">
+            		            <input type="hidden" name="announcement_id" value="{{ announcement.id }}">
+            			    <button type="submit" class="btn btn-outline-success">发布</button>
+        			</form>
+        			{% endif %}		
+        
+        			<form method="POST" style="display:inline;" onsubmit="return confirm('确定删除此公告吗？')">
+            			    {% csrf_token %}
+            			    <input type="hidden" name="delete_announcement" value="1">
+            		            <input type="hidden" name="announcement_id" value="{{ announcement.id }}">
+            	                    <button type="submit" class="btn btn-outline-danger">删除</button>
+       	 			</form>
+    		            </div>
+	                </td>>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-3">暂无公告</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 操作指南管理卡片 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">操作指南管理</h5>
+    </div>
+    <div class="card-body">
+        <!-- 创建指南表单 -->
+        <form method="POST" class="mb-4">
+            {% csrf_token %}
+            <input type="hidden" name="create_guide" value="1">
+            
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label">指南标题</label>
+                    <input type="text" name="guide_title" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">分类</label>
+                    <select name="category" class="form-select">
+                        <option value="user">用户指南</option>
+                        <option value="volunteer">志愿者指南</option>
+                        <option value="organizer">组织者指南</option>
+                        <option value="general">通用指南</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">排序</label>
+                    <input type="number" name="order" class="form-control" value="0">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">状态</label>
+                    <div class="form-check mt-2">
+                        <input type="checkbox" name="is_published" class="form-check-input" id="guidePublish">
+                        <label class="form-check-label" for="guidePublish">发布</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">指南内容</label>
+                <textarea name="guide_content" class="form-control" rows="5" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">创建指南</button>
+        </form>
+        
+        <!-- 指南列表 -->
+        <h6>现有指南</h6>
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>分类</th>
+                        <th>排序</th>
+                        <th>状态</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guide in guides %}
+                    <tr>
+                        <td>{{ guide.title }}</td>
+                        <td>
+                            <span class="badge bg-info">
+                                {% if guide.category == 'user' %}用户指南
+                                {% elif guide.category == 'volunteer' %}志愿者指南
+                                {% elif guide.category == 'organizer' %}组织者指南
+                                {% else %}通用指南{% endif %}
+                            </span>
+                        </td>
+                        <td>{{ guide.order }}</td>
+                        <td>
+                            {% if guide.is_published %}
+                            <span class="badge bg-success">已发布</span>
+                            {% else %}
+                            <span class="badge bg-secondary">草稿</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ guide.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="#" class="btn btn-outline-primary">编辑</a>
+                                <a href="#" class="btn btn-outline-danger">删除</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-3">暂无操作指南</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

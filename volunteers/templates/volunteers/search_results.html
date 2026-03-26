@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>搜索结果 - 桑榆共暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .search-header {
+            background: white;
+            padding: 30px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .search-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 16px;
+        }
+        
+        .search-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        
+        .results-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .results-count {
+            color: #666;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-section {
+            margin-bottom: 40px;
+        }
+        
+        .result-section h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-list {
+            list-style: none;
+        }
+        
+        .result-item {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .result-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .result-item h4 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .result-item p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .result-meta {
+            display: flex;
+            gap: 20px;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .no-results i {
+            font-size: 60px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="search-header">
+        <div class="search-container">
+            <form action="{% url 'search' %}" method="GET" class="search-box">
+                <input type="text" name="q" value="{{ query }}" placeholder="搜索..." class="search-input">
+                <button type="submit" class="search-btn">搜索</button>
+            </form>
+            <div class="results-count">
+                找到 {{ results.activities|length|add:results.announcements|length|add:results.guides|length }} 条相关结果
+                {% if query %} (关键词: "{{ query }}"){% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="results-container">
+        {% if query %}
+            <!-- 活动结果 -->
+            {% if results.activities %}
+            <div class="result-section">
+                <h3><i class="fas fa-calendar-alt"></i> 志愿活动 ({{ results.activities|length }})</h3>
+                <ul class="result-list">
+                    {% for activity in results.activities %}
+                    <li class="result-item">
+                        <h4>{{ activity.title }}</h4>
+                        <p>{{ activity.description|truncatechars:200 }}</p>
+                        <div class="result-meta">
+                            <span><i class="fas fa-calendar"></i> {{ activity.start_time|date:"Y-m-d H:i" }}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> {{ activity.location }}</span>
+                            <span><i class="fas fa-users"></i> {{ activity.current_participants }}/{{ activity.max_participants }}</span>
+                        </div>
+                        <a href="{% url 'activity_detail' activity.id %}" style="color: #4CAF50; text-decoration: none;">
+                            查看详情 →
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- 公告结果 -->
+            {% if results.announcements %}
+            <div class="result-section">
+                <h3><i class="fas fa-bullhorn"></i> 平台公告 ({{ results.announcements|length }})</h3>
+                <ul class="result-list">
+                    {% for announcement in results.announcements %}
+                    <li class="result-item">
+                        <h4>{{ announcement.title }}</h4>
+                        <p>{{ announcement.content|truncatechars:200 }}</p>
+                        <div class="result-meta">
+                            <span><i class="far fa-clock"></i> {{ announcement.created_at|date:"Y-m-d" }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- 指南结果 -->
+            {% if results.guides %}
+            <div class="result-section">
+                <h3><i class="fas fa-book"></i> 操作指南 ({{ results.guides|length }})</h3>
+                <ul class="result-list">
+                    {% for guide in results.guides %}
+                    <li class="result-item">
+                        <h4>{{ guide.title }}</h4>
+                        <p>{{ guide.content|truncatechars:200 }}</p>
+                        <div class="result-meta">
+                            <span>{{ guide.get_category_display }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <!-- 无结果 -->
+            {% if not results.activities and not results.announcements and not results.guides %}
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>未找到相关结果</h3>
+                <p>请尝试使用其他关键词进行搜索</p>
+                <a href="{% url 'portal' %}" style="display: inline-block; margin-top: 20px; color: #4CAF50;">
+                    返回门户首页
+                </a>
+            </div>
+            {% endif %}
+            
+        {% else %}
+            <div class="no-results">
+                <i class="fas fa-search"></i>
+                <h3>请输入搜索关键词</h3>
+                <p>在搜索框中输入您想要查找的内容</p>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

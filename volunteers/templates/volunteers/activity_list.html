@@ -1,0 +1,278 @@
+<!-- volunteers/templates/volunteers/activity_list.html -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>志愿活动 - 桑榆共暖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(to right, #4CAF50 0%, #45a049 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .activity-image {
+            height: 180px;
+            background: linear-gradient(45deg, #4CAF50, #2196F3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .activity-type {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .activity-content {
+            padding: 25px;
+        }
+        
+        .activity-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            line-height: 1.3;
+        }
+        
+        .activity-description {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .activity-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .meta-item i {
+            color: #4CAF50;
+        }
+        
+        .participants {
+            background: #f8f9fa;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+        }
+        
+        .btn-disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-disabled:hover {
+            background: #ccc;
+        }
+        
+        .create-activity-btn {
+            background: #2196F3;
+            margin-top: 20px;
+        }
+        
+        .create-activity-btn:hover {
+            background: #1976D2;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 60px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .activity-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <h1>志愿活动</h1>
+        <p>加入我们，为社会贡献爱心</p>
+    </div>
+    
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message {{ message.tags }}" style="
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    border-radius: 8px;
+                    background: {% if message.tags == 'success' %}#d4edda{% elif message.tags == 'error' %}#f8d7da{% else %}#fff3cd{% endif %};
+                    color: {% if message.tags == 'success' %}#155724{% elif message.tags == 'error' %}#721c24{% else %}#856404{% endif %};
+                ">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- 发布活动按钮（仅限活动发布者） -->
+        {% if user.is_authenticated and user.profile.role == 'organizer' and user.profile.verification_status == 'approved' %}
+        <div style="text-align: right; margin-bottom: 30px;">
+            <a href="{% url 'create_activity' %}" class="btn create-activity-btn">
+                <i class="fas fa-plus"></i> 发布新活动
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if activities %}
+            <div class="activity-grid">
+                {% for activity in activities %}
+                <div class="activity-card">
+                    <div class="activity-image">
+                        <span class="activity-type">
+                            <i class="fas fa-tag"></i>
+                            {{ activity.get_activity_type_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="activity-content">
+                        <h3 class="activity-title">{{ activity.title }}</h3>
+                        
+                        <div class="activity-description">
+                            {{ activity.description|truncatechars:120 }}
+                        </div>
+                        
+                        <div class="activity-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                {{ activity.start_time|date:"m/d H:i" }}
+                            </div>
+                            
+                            <div class="meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ activity.location|truncatechars:10 }}
+                            </div>
+                            
+                            <div class="participants">
+                                {{ activity.current_participants }}/{{ activity.max_participants }}人
+                            </div>
+                        </div>
+                        
+                        <a href="{% url 'activity_detail' activity.id %}" class="btn">
+                            查看详情
+                        </a>
+                        
+                        {% if user_can_apply and activity.can_apply and not activity.is_full %}
+                        <a href="{% url 'apply_activity' activity.id %}" class="btn" style="background: #2196F3; margin-left: 10px;">
+                            立即报名
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h3>暂无活动</h3>
+                <p>当前没有可报名的志愿活动，请稍后再来查看。</p>
+                
+                {% if user.is_authenticated and user.profile.role == 'organizer' and user.profile.verification_status == 'approved' %}
+                <a href="{% url 'create_activity' %}" class="btn create-activity-btn" style="margin-top: 20px;">
+                    <i class="fas fa-plus"></i> 发布第一个活动
+                </a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

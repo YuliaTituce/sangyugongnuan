@@ -1,0 +1,911 @@
+{% extends 'volunteers/base.html' %}
+
+{% block title %}我的仪表盘 - 桑榆共暖{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .dashboard-header h1 {
+        font-size: 32px;
+        margin-bottom: 10px;
+    }
+    
+    .dashboard-header p {
+        opacity: 0.9;
+        font-size: 18px;
+    }
+    
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+    }
+    
+    .dashboard-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+    
+    .card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .card-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .card-title {
+        font-size: 20px;
+        color: #333;
+        font-weight: 600;
+    }
+    
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 15px;
+    }
+    
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .status-unverified {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+    
+    .user-info {
+        margin: 20px 0;
+    }
+    
+    .info-item {
+        display: flex;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .info-label {
+        min-width: 100px;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .info-value {
+        flex: 1;
+        color: #333;
+    }
+    
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 12px 25px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #64748b;
+        border: 1px solid #cbd5e1;
+    }
+    
+    .btn-secondary:hover {
+        background: #e2e8f0;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: #0da271;
+        transform: translateY(-2px);
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+    
+    .quick-action {
+        background: #f8fafc;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
+    .quick-action:hover {
+        border-color: #667eea;
+        background: white;
+        transform: translateY(-3px);
+    }
+    
+    .quick-action-icon {
+        font-size: 24px;
+        color: #667eea;
+        margin-bottom: 10px;
+    }
+    
+    .quick-action-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .quick-action-desc {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .message-box {
+        padding: 20px;
+        border-radius: 10px;
+        margin: 20px 0;
+        border-left: 4px solid;
+    }
+    
+    .message-info {
+        background: #e7f3ff;
+        border-color: #0066cc;
+        color: #0066cc;
+    }
+    
+    .message-success {
+        background: #d4edda;
+        border-color: #28a745;
+        color: #155724;
+    }
+    
+    .message-warning {
+        background: #fff3cd;
+        border-color: #ffc107;
+        color: #856404;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 25px;
+        }
+        
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .btn-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* ==================== AI 助手悬浮组件样式 ==================== */
+    #chat-bubble {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: transform 0.2s;
+    }
+    #chat-bubble:hover {
+        transform: scale(1.05);
+    }
+    #chat-bubble i {
+        font-size: 28px;
+        color: white;
+    }
+
+    #chat-window {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        width: 380px;
+        height: 500px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 9998;
+        border: 1px solid #e2e8f0;
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        user-select: none;
+    }
+    .chat-header span {
+        font-weight: bold;
+        font-size: 16px;
+    }
+    .chat-header button {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: #f9fafb;
+    }
+    .message {
+        max-width: 85%;
+        padding: 8px 12px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        font-size: 14px;
+        position: relative;
+    }
+    .user-message {
+        background: #667eea;
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+    }
+    .assistant-message {
+        background: white;
+        color: #1f2937;
+        border: 1px solid #e2e8f0;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+    }
+    .assistant-message button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        margin-left: 8px;
+        font-size: 14px;
+        color: #667eea;
+        vertical-align: middle;
+    }
+
+    .chat-input {
+        display: flex;
+        padding: 12px;
+        border-top: 1px solid #e2e8f0;
+        background: white;
+    }
+    .chat-input input {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 24px;
+        outline: none;
+        font-size: 14px;
+    }
+    .chat-input input:focus {
+        border-color: #667eea;
+    }
+    .chat-input button {
+        margin-left: 8px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        padding: 8px 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .chat-input button:hover {
+        background: #5a67d8;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="dashboard-header">
+        <h1>欢迎回来，{{ user.username }}！</h1>
+        <p>这里是您的个人中心，管理您的志愿服务信息</p>
+    </div>
+    
+    <div class="dashboard-grid">
+        <!-- 认证状态卡片 -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-id-card"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">身份认证状态</h2>
+                </div>
+            </div>
+            
+            {% if user.profile %}
+                <div class="status-badge 
+                    {% if user.profile.verification_status == 'pending' %}status-pending
+                    {% elif user.profile.verification_status == 'approved' %}status-approved
+                    {% elif user.profile.verification_status == 'rejected' %}status-rejected
+                    {% else %}status-unverified{% endif %}">
+                    {% if user.profile.verification_status == 'pending' %}
+                        <i class="fas fa-clock"></i> 审核中
+                    {% elif user.profile.verification_status == 'approved' %}
+                        <i class="fas fa-check-circle"></i> 已认证
+                    {% elif user.profile.verification_status == 'rejected' %}
+                        <i class="fas fa-times-circle"></i> 已拒绝
+                    {% else %}
+                        <i class="fas fa-exclamation-circle"></i> 未认证
+                    {% endif %}
+                </div>
+                
+                <div class="user-info">
+                    <div class="info-item">
+                        <span class="info-label">姓名：</span>
+                        <span class="info-value">{{ user.profile.real_name|default:"未填写" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">角色：</span>
+                        <span class="info-value">{{ user.profile.get_role_display_name }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">手机号：</span>
+                        <span class="info-value">{{ user.profile.phone_number|default:"未填写" }}</span>
+                    </div>
+                    {% if user.profile.verification_status != 'unverified' %}
+                    <div class="info-item">
+                        <span class="info-label">提交时间：</span>
+                        <span class="info-value">
+                            {% if user.profile.submitted_at %}
+                                {{ user.profile.submitted_at|date:"Y年m月d日" }}
+                            {% else %}
+                                未提交
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="btn-group">
+                    {% if user.profile.verification_status == 'unverified' %}
+                        <a href="{% url 'role_selection' %}" class="btn btn-primary">
+                            <i class="fas fa-user-check"></i> 开始认证
+                        </a>
+                    {% elif user.profile.verification_status == 'pending' %}
+                        <a href="{% url 'verification_status' %}" class="btn btn-primary">
+                            <i class="fas fa-search"></i> 查看审核状态
+                        </a>
+                    {% elif user.profile.verification_status == 'approved' %}
+                        <a href="#" class="btn btn-success">
+                            <i class="fas fa-check-circle"></i> 认证完成
+                        </a>
+                    {% elif user.profile.verification_status == 'rejected' %}
+                        <a href="{% url 'profile_verification' %}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> 修改认证信息
+                        </a>
+                    {% endif %}
+                    
+                    {% if user.profile.verification_status != 'unverified' %}
+                        <a href="{% url 'verification_status' %}" class="btn btn-secondary">
+                            <i class="fas fa-info-circle"></i> 查看详情
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="message-box message-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 您尚未完善个人信息
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'role_selection' %}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> 立即认证
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- 快速操作卡片 -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">快速操作</h2>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                {% if user.profile.verification_status == 'approved' %}
+                    {% if user.profile.role == 'volunteer' %}
+                        <a href="{% url 'activity_list' %}" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="quick-action-title">浏览活动</div>
+                            <div class="quick-action-desc">寻找志愿服务机会</div>
+                        </a>
+                        
+                        <a href="#" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-history"></i>
+                            </div>
+                            <div class="quick-action-title">我的报名</div>
+                            <div class="quick-action-desc">查看报名记录</div>
+                        </a>
+                    {% elif user.profile.role == 'organizer' %}
+                        <a href="{% url 'create_activity' %}" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div class="quick-action-title">发布活动</div>
+                            <div class="quick-action-desc">创建新的志愿服务活动</div>
+                        </a>
+                        
+                        <a href="{% url 'organizer_activities' %}" class="quick-action">
+                            <div class="quick-action-icon">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="quick-action-title">活动管理</div>
+                            <div class="quick-action-desc">管理已发布的活动</div>
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <div class="quick-action" style="cursor: default; opacity: 0.6;">
+                        <div class="quick-action-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="quick-action-title">功能已锁定</div>
+                        <div class="quick-action-desc">完成认证后解锁</div>
+                    </div>
+                {% endif %}
+
+                <a href="{% url 'shop_index' %}" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <div class="quick-action-title">积分商城</div>
+                    <div class="quick-action-desc">兑换精美礼品</div>
+                </a>
+                <a href="{% url 'shop_orders' %}" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="quick-action-title">我的兑换</div>
+                    <div class="quick-action-desc">查看兑换记录</div>
+                </a>
+                
+                <a href="{% url 'logout' %}" class="quick-action">
+                    <div class="quick-action-icon">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <div class="quick-action-title">安全退出</div>
+                    <div class="quick-action-desc">结束当前会话</div>
+                </a>
+            </div>
+        </div>
+        
+        <!-- 系统通知卡片 -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div>
+                    <h2 class="card-title">系统通知</h2>
+                </div>
+            </div>
+            
+            <div class="notifications">
+                {% if not user.profile %}
+                    <div class="message-box message-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        您还未完善个人资料，请尽快完成认证以解锁全部功能。
+                    </div>
+                {% elif user.profile.verification_status == 'unverified' %}
+                    <div class="message-box message-warning">
+                        <i class="fas fa-exclamation-circle"></i>
+                        您还未进行身份认证，请尽快完成认证以解锁全部功能。
+                    </div>
+                {% elif user.profile.verification_status == 'pending' %}
+                    <div class="message-box message-info">
+                        <i class="fas fa-clock"></i>
+                        您的认证申请正在审核中，通常需要1-3个工作日。
+                    </div>
+                {% elif user.profile.verification_status == 'approved' %}
+                    <div class="message-box message-success">
+                        <i class="fas fa-check-circle"></i>
+                        恭喜！您已通过认证，可以参与志愿服务活动了。
+                    </div>
+                {% elif user.profile.verification_status == 'rejected' %}
+                    <div class="message-box message-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        您的认证申请被拒绝，请根据审核意见修改后重新提交。
+                    </div>
+                {% endif %}
+                
+                <div class="message-box message-info">
+                    <i class="fas fa-info-circle"></i>
+                    如有任何问题，请联系平台管理员获取帮助。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ==================== AI 助手悬浮组件 ==================== -->
+<div id="chat-bubble">
+    <i class="fas fa-robot"></i>
+</div>
+
+<div id="chat-window">
+    <div class="chat-header" id="chat-header">
+        <span>志愿活动助手</span>
+        <button id="close-chat">×</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+        <div class="message assistant-message">您好！我是志愿活动助手，可以帮助您发布、查看和修改活动。请问需要什么帮助？</div>
+    </div>
+    <div class="chat-input">
+        <input type="text" id="chat-input" placeholder="输入您的问题..." />
+        <button id="send-btn">发送</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ==================== 阿里云百炼配置 ====================
+const ALIYUN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+const ALIYUN_API_KEY = 'sk-35b3e507b8a24b218df3d396a55f5660';  // 你的API Key
+const DJANGO_BASE_URL = ''; // 同域，留空
+
+// 对话历史（多轮对话上下文）
+let conversationHistory = [];
+
+// 系统提示词（优化后，简洁且包含工具使用说明）
+const now = new Date();
+const todayStr = now.toISOString().slice(0, 10); // 格式：YYYY-MM-DD
+
+const SYSTEM_PROMPT = `你是“桑榆共暖”志愿服务平台的AI助手，帮助已登录的组织者管理活动。请用亲切、耐心、简单的语言与老年人交流。
+
+**今天的日期是：${todayStr}**。当用户提到“明天”、“后天”等相对时间时，请根据今天日期计算出具体日期，并严格按照ISO 8601格式（YYYY-MM-DDTHH:MM:SS）输出时间。
+
+当用户需要操作时，你必须输出以下格式的指令（不输出额外解释）：
+- 发布活动：[ACTION]{"type":"create","data":{"title":"活动标题","description":"描述","start_time":"具体开始时间","end_time":"具体结束时间","location":"地点","address_detail":"详细地址","max_participants":50}}
+- 查看活动列表：[ACTION]{"type":"list"}
+- 修改活动：[ACTION]{"type":"update","data":{"id":123,"title":"新标题","description":"新描述"}}
+
+注意：
+1. 时间必须使用ISO 8601格式，例如 "2026-03-23T09:00:00"（请以今天 ${todayStr} 为基准计算）。
+2. 如果用户信息不全，请先询问补齐。
+3. 收到操作结果后，再根据结果回复用户。
+4. 不要重复用户的问题，直接给出简洁回复。`;
+
+// DOM 元素
+const bubble = document.getElementById('chat-bubble');
+const windowDiv = document.getElementById('chat-window');
+const closeBtn = document.getElementById('close-chat');
+const messagesDiv = document.getElementById('chat-messages');
+const inputField = document.getElementById('chat-input');
+const sendBtn = document.getElementById('send-btn');
+
+// ==================== 工具函数 ====================
+function speakText(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'zh-CN';
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    window.speechSynthesis.speak(utterance);
+}
+
+function addMessage(content, isUser = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message');
+    msgDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
+    msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+    if (!isUser) {
+        const readBtn = document.createElement('button');
+        readBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        readBtn.style.background = 'none';
+        readBtn.style.border = 'none';
+        readBtn.style.cursor = 'pointer';
+        readBtn.style.marginLeft = '8px';
+        readBtn.style.fontSize = '14px';
+        readBtn.style.color = '#667eea';
+        readBtn.onclick = (e) => {
+            e.stopPropagation();
+            speakText(content);
+        };
+        msgDiv.appendChild(readBtn);
+    }
+
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+async function callDjangoAPI(action) {
+    const { type, data } = action;
+    let url = '';
+    let method = '';
+    let body = null;
+
+    if (type === 'create') {
+        url = `${DJANGO_BASE_URL}/api/activities/create/`;
+        method = 'POST';
+        body = data;
+    } else if (type === 'list') {
+        url = `${DJANGO_BASE_URL}/api/activities/list/`;
+        method = 'GET';
+    } else if (type === 'update') {
+        const id = data.id;
+        url = `${DJANGO_BASE_URL}/api/activities/update/`; // 使用新的POST接口
+        method = 'POST';
+        body = data;  // 包含id
+    } else {
+        return { status: 'error', message: '未知操作类型' };
+    }
+
+    try {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
+        });
+        const result = await response.json();
+        return result;
+    } catch (err) {
+        console.error('API 调用失败', err);
+        return { status: 'error', message: err.message };
+    }
+}
+
+// 调用阿里云百炼
+async function sendToAliyun(userMessage) {
+    addMessage(userMessage, true);
+    inputField.value = '';
+
+    // 维护对话历史（最多保留最近6轮，节省token）
+    conversationHistory.push({ role: 'user', content: userMessage });
+    if (conversationHistory.length > 12) { // 6轮对话（user+assistant）共12条
+        conversationHistory = conversationHistory.slice(-12);
+    }
+
+    const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...conversationHistory
+    ];
+
+    const payload = {
+        model: 'qwen-plus',
+        messages: messages,
+        stream: true,
+        temperature: 0.3,
+        max_tokens: 800
+    };
+
+    try {
+        const response = await fetch(ALIYUN_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${ALIYUN_API_KEY}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('阿里云百炼 API 错误:', response.status, errorText);
+            addMessage(`服务出错（${response.status}），请稍后重试或联系管理员。`, false);
+            return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let fullAnswer = '';
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            let lines = buffer.split('\n');
+            buffer = lines.pop();
+
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    const dataStr = line.slice(6);
+                    if (dataStr === '[DONE]') continue;
+                    try {
+                        const data = JSON.parse(dataStr);
+                        if (data.choices && data.choices[0].delta.content) {
+                            fullAnswer += data.choices[0].delta.content;
+                        }
+                    } catch (e) {
+                        console.warn('解析流式数据失败:', e, dataStr);
+                    }
+                }
+            }
+        }
+
+        if (fullAnswer) {
+            // 将AI回复加入历史
+            conversationHistory.push({ role: 'assistant', content: fullAnswer });
+            if (conversationHistory.length > 12) {
+                conversationHistory = conversationHistory.slice(-12);
+            }
+            handleAssistantMessage(fullAnswer);
+        } else {
+            addMessage('助手没有返回有效内容，请重试。', false);
+        }
+
+    } catch (err) {
+        console.error('阿里云百炼请求失败', err);
+        addMessage('抱歉，连接服务失败，请稍后再试。', false);
+    }
+}
+
+async function handleAssistantMessage(text) {
+    if (typeof text !== 'string') {
+        addMessage('助手返回了无效内容，请重试。', false);
+        return;
+    }
+    addMessage(text, false);
+    
+    if (text.startsWith('[ACTION]')) {
+        try {
+            const jsonStr = text.slice(8);
+            const action = JSON.parse(jsonStr);
+            const result = await callDjangoAPI(action);
+            const feedback = `操作结果：${JSON.stringify(result)}`;
+            // 将操作结果作为用户消息再次发送，让AI继续对话
+            await sendToAliyun(feedback);
+        } catch (e) {
+            console.error('解析 [ACTION] 失败', e);
+            addMessage('指令解析失败，请重试。', false);
+        }
+    }
+}
+
+// ==================== UI 交互 ====================
+bubble.addEventListener('click', () => {
+    windowDiv.style.display = 'flex';
+    bubble.style.display = 'none';
+});
+
+closeBtn.addEventListener('click', () => {
+    windowDiv.style.display = 'none';
+    bubble.style.display = 'flex';
+    // 重置窗口位置（可选）
+    windowDiv.style.right = '20px';
+    windowDiv.style.bottom = '100px';
+    windowDiv.style.left = 'auto';
+    windowDiv.style.top = 'auto';
+});
+
+sendBtn.addEventListener('click', () => {
+    const msg = inputField.value.trim();
+    if (msg) sendToAliyun(msg);
+});
+inputField.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendBtn.click();
+});
+
+windowDiv.style.right = '20px';
+windowDiv.style.bottom = '100px';
+windowDiv.style.left = 'auto';
+windowDiv.style.top = 'auto';
+</script>
+{% endblock %}

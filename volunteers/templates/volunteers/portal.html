@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ site_name|default:"桑榆共暖" }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 导航栏 */
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        
+        .logo-icon {
+            color: #4CAF50;
+            font-size: 28px;
+        }
+        
+        .search-box {
+            flex: 1;
+            max-width: 500px;
+            margin: 0 40px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .search-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .search-btn:hover {
+            background: #45a049;
+        }
+        
+        .main-content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            flex: 1;
+        }
+        
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .welcome-section h1 {
+            color: #2c3e50;
+            font-size: 36px;
+            margin-bottom: 15px;
+        }
+        
+        .welcome-section p {
+            color: #666;
+            font-size: 18px;
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 25px;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        
+        .btn:hover {
+            background: #45a049;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 25px;
+        }
+        
+        .section-header h2 {
+            color: #2c3e50;
+            font-size: 28px;
+        }
+        
+        .activities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+        
+        .activity-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .activity-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .activity-header h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .activity-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .activity-content {
+            padding: 20px;
+            color: #666;
+            line-height: 1.6;
+            min-height: 100px;
+        }
+        
+        .activity-footer {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .announcements-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .announcement-item {
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .announcement-item:last-child {
+            border-bottom: none;
+        }
+        
+        .announcement-date {
+            color: #999;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .announcement-title {
+            color: #2c3e50;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .guides-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        
+        .guide-list {
+            list-style: none;
+        }
+        
+        .guide-list li {
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .guide-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .guide-list a {
+            color: #4CAF50;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-status {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 50px;
+            text-align: center;
+        }
+        
+        .user-status h2 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+        
+        .user-status p {
+            margin-bottom: 25px;
+            font-size: 18px;
+            opacity: 0.9;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            padding: 50px 0 30px;
+            margin-top: auto;
+        }
+        
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .footer-section h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #4CAF50;
+        }
+        
+        .footer-section p {
+            line-height: 1.6;
+            opacity: 0.8;
+            margin-bottom: 15px;
+        }
+        
+        .contact-info p {
+            margin-bottom: 10px;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            opacity: 0.6;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .search-box {
+                margin: 0;
+                width: 100%;
+            }
+            
+            .welcome-section h1 {
+                font-size: 28px;
+            }
+            
+            .section-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .activities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* AI 助手样式 */
+        #chat-bubble {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: transform 0.2s;
+        }
+        #chat-bubble:hover {
+            transform: scale(1.05);
+        }
+        #chat-bubble i {
+            font-size: 28px;
+            color: white;
+        }
+
+        #chat-window {
+            position: fixed;
+            bottom: 100px;
+            right: 20px;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 9998;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .chat-header span {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .chat-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #f9fafb;
+        }
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            font-size: 14px;
+            position: relative;
+        }
+        .user-message {
+            background: #667eea;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .assistant-message {
+            background: white;
+            color: #1f2937;
+            border: 1px solid #e2e8f0;
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+        }
+        .assistant-message button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            margin-left: 8px;
+            font-size: 14px;
+            color: #667eea;
+            vertical-align: middle;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 24px;
+            outline: none;
+            font-size: 14px;
+        }
+        .chat-input input:focus {
+            border-color: #667eea;
+        }
+        .chat-input button {
+            margin-left: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 24px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-input button:hover {
+            background: #5a67d8;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{% url 'portal' %}" class="logo">
+                <i class="fas fa-hands-helping logo-icon"></i>
+                <span>{{ site_name|default:"桑榆共暖" }}</span>
+            </a>
+            
+            <div class="search-box">
+                <form action="{% url 'search' %}" method="GET" class="search-form">
+                    <input type="text" name="q" placeholder="搜索活动、公告、指南..." class="search-input" 
+                           value="{{ request.GET.q }}">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                </form>
+            </div>
+            
+            <div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn">进入个人中心</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn">登录 / 注册</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="main-content">
+        <section class="welcome-section">
+            <h1>欢迎来到{{ site_name|default:"桑榆共暖" }}志愿服务平台</h1>
+            <p>{{ site_description|default:"连接志愿者与志愿服务机会，让爱心温暖人间。在这里，您可以浏览最新活动、了解志愿服务指南、查看平台公告，注册后即可参与志愿服务。" }}</p>
+        </section>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-calendar-alt feature-icon"></i>
+                <h3>浏览志愿活动</h3>
+                <p>查看最新的志愿服务活动，了解活动详情、时间地点和参与要求。</p>
+                <a href="{% url 'activity_list' %}" class="btn">查看活动</a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-book feature-icon"></i>
+                <h3>操作指南</h3>
+                <p>了解如何注册、认证身份、参与活动等详细操作步骤。</p>
+                <a href="#guides" class="btn">查看指南</a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-bullhorn feature-icon"></i>
+                <h3>平台公告</h3>
+                <p>获取平台最新动态、政策变化和重要通知。</p>
+                <a href="#announcements" class="btn">查看公告</a>
+            </div>
+            
+            <div class="feature-card">
+                <i class="fas fa-comments feature-icon"></i>
+                <h3>反馈建议</h3>
+                <p>分享您的使用体验和建议，帮助我们做得更好。</p>
+                <a href="{% url 'feedback' %}" class="btn">我要反馈</a>
+            </div>
+        </div>
+        
+        <div class="section-header">
+            <h2>最新志愿活动</h2>
+            <a href="{% url 'activity_list' %}" class="btn">查看全部活动</a>
+        </div>
+        
+        <div class="activities-grid">
+            {% for activity in latest_activities %}
+            <div class="activity-card">
+                <div class="activity-header">
+                    <h3>{{ activity.title }}</h3>
+                    <div class="activity-meta">
+                        <span><i class="fas fa-calendar"></i> {{ activity.start_time|date:"m-d H:i" }}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> {{ activity.location }}</span>
+                    </div>
+                </div>
+                <div class="activity-content">
+                    {{ activity.description|truncatechars:150 }}
+                </div>
+                <div class="activity-footer">
+                    <span class="participants">
+                        <i class="fas fa-users"></i> {{ activity.current_participants }}/{{ activity.max_participants }}
+                    </span>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'activity_detail' activity.id %}" class="btn">查看详情</a>
+                    {% else %}
+                        <span style="color: #999;">登录后查看详情</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 20px; color: #ddd;"></i>
+                <h3>暂无活动</h3>
+                <p>当前没有可显示的志愿活动</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div id="announcements" class="announcements-section">
+            <div class="section-header">
+                <h2><i class="fas fa-bullhorn"></i> 平台公告</h2>
+                <a href="#" class="btn btn-secondary">全部公告</a>
+            </div>
+            
+            {% for announcement in latest_announcements %}
+            <div class="announcement-item">
+                <div class="announcement-date">
+                    <i class="far fa-calendar"></i> {{ announcement.created_at|date:"Y年m月d日" }}
+                </div>
+                <h3 class="announcement-title">{{ announcement.title }}</h3>
+                <p>{{ announcement.content|truncatechars:100 }}</p>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 40px; color: #666;">
+                <i class="fas fa-newspaper" style="font-size: 48px; margin-bottom: 20px; color: #ddd;"></i>
+                <p>暂无公告</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div id="guides" class="guides-section">
+            <div class="section-header">
+                <h2><i class="fas fa-book"></i> 操作指南</h2>
+            </div>
+            
+            <ul class="guide-list">
+                {% for guide in guides %}
+                <li>
+                    <a href="#">
+                        <i class="fas fa-{{ guide.icon|default:'question-circle' }}"></i>
+                        <div>
+                            <strong>{{ guide.title }}</strong>
+                            <small>{{ guide.content|truncatechars:30 }}</small>
+                        </div>
+                    </a>
+                </li>
+                {% empty %}
+                <li>
+                    <a href="#">
+                        <i class="fas fa-user-plus"></i>
+                        <div>
+                            <strong>如何注册账号</strong>
+                            <small>详细步骤指导用户完成注册流程</small>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <i class="fas fa-id-card"></i>
+                        <div>
+                            <strong>身份认证流程</strong>
+                            <small>志愿者和活动发布者认证指南</small>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        {% if not user.is_authenticated %}
+        <div class="user-status">
+            <h2>立即加入我们！</h2>
+            <p>注册账号，完成身份认证，开启您的志愿服务之旅</p>
+            <div>
+                <a href="{% url 'register' %}" class="btn" style="background: white; color: #667eea; margin-right: 15px;">
+                    立即注册
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-secondary">
+                    已有账号？登录
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>{{ site_name|default:"桑榆共暖" }}</h3>
+                    <p>{{ site_description|default:"连接志愿者与志愿服务机会，让爱心温暖人间" }}</p>
+                </div>
+                
+                <div class="footer-section contact-info">
+                    <h3>联系我们</h3>
+                    <p><i class="fas fa-envelope"></i> 邮箱：{{ contact_email|default:"contact@example.com" }}</p>
+                    <p><i class="fas fa-phone"></i> 电话：{{ contact_phone|default:"13800138000" }}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> 地址：{{ site_address|default:"北京市海淀区" }}</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>快速链接</h3>
+                    <p><a href="{% url 'portal' %}" style="color: #4CAF50; text-decoration: none;">门户首页</a></p>
+                    <p><a href="{% url 'activity_list' %}" style="color: #4CAF50; text-decoration: none;">志愿活动</a></p>
+                    <p><a href="{% url 'feedback' %}" style="color: #4CAF50; text-decoration: none;">意见反馈</a></p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 {{ site_name|default:"桑榆共暖志愿服务平台" }} 版权所有</p>
+                <p class="mt-2">
+                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" style="color: rgba(255,255,255,0.6); text-decoration: none;">京ICP备2026010034号-1</a>
+                    <span style="color: rgba(255,255,255,0.3); margin: 0 8px;">|</span>
+                    <a href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=XXXXXXXX" target="_blank" rel="noopener noreferrer" style="color: rgba(255,255,255,0.6); text-decoration: none;">
+                        <img src="https://www.beian.gov.cn/img/ghs.png" style="height:14px; vertical-align:middle; margin-right:4px;" alt="公安备案">
+                        京公网安备11010802047768号
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AI 助手组件 -->
+    <div id="chat-bubble">
+        <i class="fas fa-robot"></i>
+    </div>
+    <div id="chat-window">
+        <div class="chat-header" id="chat-header">
+            <span>志愿活动助手</span>
+            <button id="close-chat">×</button>
+        </div>
+        <div class="chat-messages" id="chat-messages">
+            <div class="message assistant-message">您好！我是志愿活动助手，可以帮助您发布、查看和修改活动。请问需要什么帮助？</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chat-input" placeholder="输入您的问题..." />
+            <button id="send-btn">发送</button>
+        </div>
+    </div>
+
+    <script>
+    // ==================== 阿里云百炼配置 ====================
+    const ALIYUN_API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+    const ALIYUN_API_KEY = 'sk-35b3e507b8a24b218df3d396a55f5660';
+    const DJANGO_BASE_URL = ''; // 同域，留空
+
+    let conversationHistory = [];
+
+    const now = new Date();
+    const todayStr = now.toISOString().slice(0, 10); // 格式：YYYY-MM-DD
+
+    const SYSTEM_PROMPT = `你是“桑榆共暖”志愿服务平台的AI助手，帮助已登录的组织者管理活动。请用亲切、耐心、简单的语言与老年人交流。
+
+    **今天的日期是：${todayStr}**。当用户提到“明天”、“后天”等相对时间时，请根据今天日期计算出具体日期，并严格按照ISO 8601格式（YYYY-MM-DDTHH:MM:SS）输出时间。
+
+    当用户需要操作时，你必须输出以下格式的指令（不输出额外解释）：
+    - 发布活动：[ACTION]{"type":"create","data":{"title":"活动标题","description":"描述","start_time":"具体开始时间","end_time":"具体结束时间","location":"地点","address_detail":"详细地址","max_participants":50}}
+    - 查看活动列表：[ACTION]{"type":"list"}
+    - 修改活动：[ACTION]{"type":"update","data":{"id":123,"title":"新标题","description":"新描述"}}
+
+    注意：
+    1. 时间必须使用ISO 8601格式，例如 "2026-03-23T09:00:00"（请以今天 ${todayStr} 为基准计算）。
+    2. 如果用户信息不全，请先询问补齐。
+    3. 收到操作结果后，再根据结果回复用户。
+    4. 不要重复用户的问题，直接给出简洁回复。`;
+
+    const bubble = document.getElementById('chat-bubble');
+    const windowDiv = document.getElementById('chat-window');
+    const closeBtn = document.getElementById('close-chat');
+    const messagesDiv = document.getElementById('chat-messages');
+    const inputField = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function speakText(text) {
+        if (!window.speechSynthesis) return;
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'zh-CN';
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function addMessage(content, isUser = false) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        msgDiv.classList.add(isUser ? 'user-message' : 'assistant-message');
+        msgDiv.innerHTML = content.replace(/\n/g, '<br>');
+
+        if (!isUser) {
+            const readBtn = document.createElement('button');
+            readBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+            readBtn.style.background = 'none';
+            readBtn.style.border = 'none';
+            readBtn.style.cursor = 'pointer';
+            readBtn.style.marginLeft = '8px';
+            readBtn.style.fontSize = '14px';
+            readBtn.style.color = '#667eea';
+            readBtn.onclick = (e) => {
+                e.stopPropagation();
+                speakText(content);
+            };
+            msgDiv.appendChild(readBtn);
+        }
+
+        messagesDiv.appendChild(msgDiv);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    async function callDjangoAPI(action) {
+        const { type, data } = action;
+        let url = '';
+        let method = '';
+        let body = null;
+
+        if (type === 'create') {
+            url = `${DJANGO_BASE_URL}/api/activities/create/`;
+            method = 'POST';
+            body = data;
+        } else if (type === 'list') {
+            url = `${DJANGO_BASE_URL}/api/activities/list/`;
+            method = 'GET';
+        } else if (type === 'update') {
+            const id = data.id;
+            url = `${DJANGO_BASE_URL}/api/activities/update/`;
+            method = 'POST';
+            body = data;
+        } else {
+            return { status: 'error', message: '未知操作类型' };
+        }
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                credentials: 'same-origin',
+                body: body ? JSON.stringify(body) : undefined
+            });
+            const result = await response.json();
+            return result;
+        } catch (err) {
+            console.error('API 调用失败', err);
+            return { status: 'error', message: err.message };
+        }
+    }
+
+    async function sendToAliyun(userMessage) {
+        addMessage(userMessage, true);
+        inputField.value = '';
+
+        conversationHistory.push({ role: 'user', content: userMessage });
+        if (conversationHistory.length > 12) {
+            conversationHistory = conversationHistory.slice(-12);
+        }
+
+        const messages = [
+            { role: 'system', content: SYSTEM_PROMPT },
+            ...conversationHistory
+        ];
+
+        const payload = {
+            model: 'qwen-plus',
+            messages: messages,
+            stream: true,
+            temperature: 0.3,
+            max_tokens: 800
+        };
+
+        try {
+            const response = await fetch(ALIYUN_API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ALIYUN_API_KEY}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('阿里云百炼 API 错误:', response.status, errorText);
+                addMessage(`服务出错（${response.status}），请稍后重试或联系管理员。`, false);
+                return;
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let fullAnswer = '';
+            let buffer = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                let lines = buffer.split('\n');
+                buffer = lines.pop();
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const dataStr = line.slice(6);
+                        if (dataStr === '[DONE]') continue;
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (data.choices && data.choices[0].delta.content) {
+                                fullAnswer += data.choices[0].delta.content;
+                            }
+                        } catch (e) {
+                            console.warn('解析流式数据失败:', e, dataStr);
+                        }
+                    }
+                }
+            }
+
+            if (fullAnswer) {
+                conversationHistory.push({ role: 'assistant', content: fullAnswer });
+                if (conversationHistory.length > 12) {
+                    conversationHistory = conversationHistory.slice(-12);
+                }
+                handleAssistantMessage(fullAnswer);
+            } else {
+                addMessage('助手没有返回有效内容，请重试。', false);
+            }
+
+        } catch (err) {
+            console.error('阿里云百炼请求失败', err);
+            addMessage('抱歉，连接服务失败，请稍后再试。', false);
+        }
+    }
+
+    async function handleAssistantMessage(text) {
+        if (typeof text !== 'string') {
+            addMessage('助手返回了无效内容，请重试。', false);
+            return;
+        }
+        addMessage(text, false);
+        
+        if (text.startsWith('[ACTION]')) {
+            try {
+                const jsonStr = text.slice(8);
+                const action = JSON.parse(jsonStr);
+                const result = await callDjangoAPI(action);
+                const feedback = `操作结果：${JSON.stringify(result)}`;
+                await sendToAliyun(feedback);
+            } catch (e) {
+                console.error('解析 [ACTION] 失败', e);
+                addMessage('指令解析失败，请重试。', false);
+            }
+        }
+    }
+
+    // UI 交互
+    bubble.addEventListener('click', () => {
+        windowDiv.style.display = 'flex';
+        bubble.style.display = 'none';
+    });
+
+    closeBtn.addEventListener('click', () => {
+        windowDiv.style.display = 'none';
+        bubble.style.display = 'flex';
+        windowDiv.style.right = '20px';
+        windowDiv.style.bottom = '100px';
+        windowDiv.style.left = 'auto';
+        windowDiv.style.top = 'auto';
+    });
+
+    sendBtn.addEventListener('click', () => {
+        const msg = inputField.value.trim();
+        if (msg) sendToAliyun(msg);
+    });
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendBtn.click();
+    });
+
+    windowDiv.style.right = '20px';
+    windowDiv.style.bottom = '100px';
+    windowDiv.style.left = 'auto';
+    windowDiv.style.top = 'auto';
+    </script>
+</body>
+</html>

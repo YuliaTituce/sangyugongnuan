@@ -1,0 +1,266 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}用户详情 · {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="section-title mb-0" style="border-bottom: none;">
+        <i class="fas fa-user-circle"></i> 用户详情：{{ user.username }}
+    </div>
+    <div>
+        <a href="{% url 'user_management' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+        {% if user.is_active %}
+        <form method="post" action="{% url 'update_user_status' user.id %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="deactivate">
+            <button type="submit" class="btn btn-warning" onclick="return confirm('确定要禁用此用户吗？')">
+                <i class="fas fa-ban"></i> 禁用
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'update_user_status' user.id %}" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="activate">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-check-circle"></i> 激活
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <!-- 左侧：基本信息卡片 -->
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex flex-column align-items-center mb-3">
+                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 100px; height: 100px;">
+                        <i class="fas fa-user-circle fa-4x" style="color: #1a237e;"></i>
+                    </div>
+                    <h5 class="mt-3">{{ profile.real_name|default:user.username }}</h5>
+                    <span class="badge 
+                        {% if profile.verification_status == 'approved' %}bg-success
+                        {% elif profile.verification_status == 'pending' %}bg-warning
+                        {% elif profile.verification_status == 'rejected' %}bg-danger
+                        {% else %}bg-secondary{% endif %}">
+                        {{ profile.get_verification_status_display }}
+                    </span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>用户名</span>
+                        <span class="fw-bold">{{ user.username }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>邮箱</span>
+                        <span>{{ user.email }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>手机号</span>
+                        <span>{{ profile.phone_number|default:"未填写" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>角色</span>
+                        <span>{{ profile.get_role_display }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>注册时间</span>
+                        <span>{{ user.date_joined|date:"Y-m-d H:i" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>最后登录</span>
+                        <span>{{ user.last_login|date:"Y-m-d H:i"|default:"从未登录" }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        {% if profile.verification_status == 'pending' %}
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">待审核认证</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>提交时间：</strong>{{ profile.submitted_at|date:"Y-m-d H:i" }}</p>
+                <p><strong>申请角色：</strong>{{ profile.get_role_display }}</p>
+                <a href="{% url 'review_profile' profile.id %}" class="btn btn-primary w-100">
+                    <i class="fas fa-clipboard-check"></i> 前往审核
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 右侧：活动/反馈/日志 -->
+    <div class="col-md-8">
+        <!-- 活动参与记录 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">参与的活动 ({{ participated_activities.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if participated_activities %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>活动标题</th>
+                                <th>状态</th>
+                                <th>报名时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in participated_activities %}
+                            <tr>
+                                <td>{{ app.activity.title }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if app.status == 'approved' %}bg-success
+                                        {% elif app.status == 'pending' %}bg-warning
+                                        {% else %}bg-danger{% endif %}">
+                                        {{ app.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ app.applied_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <a href="{% url 'admin_activity_detail' app.activity.id %}" class="btn btn-sm btn-outline-primary">查看</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无参与活动</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 发布的活动（仅组织者） -->
+        {% if profile.role == 'organizer' %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">发布的活动 ({{ organized_activities.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if organized_activities %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>活动标题</th>
+                                <th>状态</th>
+                                <th>开始时间</th>
+                                <th>参与人数</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in organized_activities %}
+                            <tr>
+                                <td>{{ activity.title }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if activity.status == 'published' %}bg-success
+                                        {% elif activity.status == 'ongoing' %}bg-primary
+                                        {% elif activity.status == 'completed' %}bg-info
+                                        {% elif activity.status == 'cancelled' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ activity.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ activity.start_time|date:"Y-m-d" }}</td>
+                                <td>{{ activity.current_participants }}/{{ activity.max_participants }}</td>
+                                <td>
+                                    <a href="{% url 'admin_activity_detail' activity.id %}" class="btn btn-sm btn-outline-primary">管理</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无发布活动</p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 反馈记录 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">反馈记录 ({{ user_feedback.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if user_feedback %}
+                <div class="list-group">
+                    {% for feedback in user_feedback %}
+                    <div class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">{{ feedback.created_at|date:"Y-m-d H:i" }}</small>
+                            <span class="badge 
+                                {% if feedback.status == 'pending' %}bg-warning
+                                {% elif feedback.status == 'reviewed' %}bg-info
+                                {% elif feedback.status == 'resolved' %}bg-success
+                                {% endif %}">
+                                {{ feedback.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="mb-1">{{ feedback.content|truncatechars:100 }}</p>
+                        {% if feedback.response %}
+                        <small class="text-primary">回复：{{ feedback.response }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无反馈</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- 操作日志 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">操作日志</h5>
+            </div>
+            <div class="card-body">
+                {% if access_logs %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>操作人</th>
+                                <th>操作</th>
+                                <th>IP地址</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in access_logs %}
+                            <tr>
+                                <td>{{ log.accessed_at|date:"Y-m-d H:i" }}</td>
+                                <td>{{ log.accessed_by.username }}</td>
+                                <td>{{ log.get_action_display }}</td>
+                                <td>{{ log.ip_address }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无操作日志</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

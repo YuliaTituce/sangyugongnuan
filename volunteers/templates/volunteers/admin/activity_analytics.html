@@ -1,0 +1,131 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}活动分析 · 桑榆共暖{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-number-large {
+        font-size: 36px;
+        font-weight: 700;
+        color: #1a237e;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-chart-line"></i> 活动分析
+</div>
+
+<!-- 概览卡片 -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="stat-number-large">{{ total_activities }}</div>
+                <div class="text-muted">总活动数</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h6>按状态分布</h6>
+                <div class="d-flex flex-wrap gap-3">
+                    {% for stat in status_stats %}
+                    <div>
+                        <span class="badge 
+                            {% if stat.status == 'published' %}bg-success
+                            {% elif stat.status == 'draft' %}bg-secondary
+                            {% elif stat.status == 'ongoing' %}bg-primary
+                            {% elif stat.status == 'completed' %}bg-info
+                            {% elif stat.status == 'cancelled' %}bg-danger
+                            {% else %}bg-light text-dark{% endif %}">
+                            {{ stat.status_display }}
+                        </span>
+                        <span class="ms-1">{{ stat.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 参与度排行 -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">参与度最高的活动（前10）</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>活动名称</th>
+                        <th>组织者</th>
+                        <th>报名人数</th>
+                        <th>上限</th>
+                        <th>参与率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in participation_stats %}
+                    <tr>
+                        <td><a href="{% url 'admin_activity_detail' activity.id %}">{{ activity.title|truncatechars:30 }}</a></td>
+                        <td>{{ activity.organizer.real_name|default:activity.organizer.user.username }}</td>
+                        <td>{{ activity.current_participants }}</td>
+                        <td>{{ activity.max_participants }}</td>
+                        <td>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar bg-success" style="width: {{ activity.participation_rate|floatformat:0 }}%;">
+                                    {{ activity.participation_rate|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center">暂无数据</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 近30天活动创建趋势 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">近30天活动创建趋势</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="trendChart" style="height: 300px; width: 100%;"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [{% for item in daily_activities %}'{{ item.date|date:"m-d" }}',{% endfor %}],
+                datasets: [{
+                    label: '新创建活动',
+                    data: [{% for item in daily_activities %}{{ item.count }},{% endfor %}],
+                    borderColor: '#1a237e',
+                    backgroundColor: 'rgba(26,35,126,0.05)',
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}反馈管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-comments"></i> 反馈管理
+</div>
+
+<!-- 状态筛选 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="status" class="form-label">状态筛选</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">全部反馈</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>待处理</option>
+                    <option value="reviewed" {% if status_filter == 'reviewed' %}selected{% endif %}>已查看</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>已解决</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">筛选</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 反馈列表 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">用户反馈</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>用户</th>
+                        <th>内容</th>
+                        <th>状态</th>
+                        <th>提交时间</th>
+                        <th>回复</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for feedback in feedback_list %}
+                    <tr>
+                        <td>{{ feedback.id }}</td>
+                        <td>{{ feedback.user.username }}</td>
+                        <td>{{ feedback.content|truncatechars:50 }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if feedback.status == 'pending' %}bg-warning
+                                {% elif feedback.status == 'reviewed' %}bg-info
+                                {% elif feedback.status == 'resolved' %}bg-success
+                                {% endif %}">
+                                {{ feedback.get_status_display }}
+                            </span>
+                        </td>
+                        <td>{{ feedback.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ feedback.response|default:"-"|truncatechars:30 }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                {% if feedback.status != 'resolved' %}
+                                <button type="button" class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#replyModal{{ feedback.id }}">
+                                    回复
+                                </button>
+                                {% endif %}
+                                <form method="post" action="{% url 'feedback_management' %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="feedback_id" value="{{ feedback.id }}">
+                                    <input type="hidden" name="action" value="delete">
+                                    <button type="submit" class="btn btn-outline-danger" onclick="return confirm('确定删除此反馈？')">删除</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- 回复模态框 -->
+                    <div class="modal fade" id="replyModal{{ feedback.id }}" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form method="post" action="{% url 'feedback_management' %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="feedback_id" value="{{ feedback.id }}">
+                                    <input type="hidden" name="action" value="mark_resolved">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">回复反馈 #{{ feedback.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">用户反馈</label>
+                                            <textarea class="form-control" rows="3" disabled>{{ feedback.content }}</textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">回复内容</label>
+                                            <textarea name="response" class="form-control" rows="4" required></textarea>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                        <button type="submit" class="btn btn-primary">提交回复</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">暂无反馈</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

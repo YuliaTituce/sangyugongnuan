@@ -1,0 +1,162 @@
+/* 秋日动态背景样式 */
+.autumn-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, 
+        #f39c12 0%, 
+        #e67e22 25%, 
+        #d35400 50%, 
+        #a04000 75%, 
+        #7d3c98 100%);
+    z-index: -1;
+    overflow: hidden;
+}
+
+/* 桑树主体 */
+.mulberry-tree {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 600px;
+    z-index: 1;
+}
+
+.tree-trunk {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 400px;
+    background: linear-gradient(to right, #5d4037 0%, #3e2723 100%);
+    border-radius: 40px 40px 0 0;
+    box-shadow: 
+        inset 5px 0 10px rgba(0,0,0,0.3),
+        inset -5px 0 10px rgba(0,0,0,0.3);
+}
+
+.tree-crown {
+    position: absolute;
+    top: 100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 350px;
+    height: 350px;
+    background: radial-gradient(circle at 30% 30%, 
+        rgba(255, 193, 7, 0.8) 0%,
+        rgba(255, 152, 0, 0.7) 30%,
+        rgba(230, 126, 34, 0.6) 60%,
+        rgba(211, 84, 0, 0.3) 100%);
+    border-radius: 50%;
+    box-shadow: 
+        0 0 60px rgba(255, 193, 7, 0.6),
+        inset 0 0 40px rgba(255, 235, 59, 0.4);
+    filter: blur(2px);
+}
+
+/* 叶子样式 */
+.leaf {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(45deg, 
+        #ffeb3b 0%, 
+        #ffc107 50%, 
+        #ff9800 100%);
+    border-radius: 50% 0 50% 50%;
+    transform-origin: center;
+    opacity: 0.9;
+    animation: leaf-fall linear infinite;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+/* 落叶动画 */
+@keyframes leaf-fall {
+    0% {
+        transform: translateY(-100vh) rotate(0deg) scale(0.5);
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.9;
+    }
+    90% {
+        opacity: 0.9;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg) scale(1);
+        opacity: 0;
+    }
+}
+
+/* 光线效果 */
+.sun-rays {
+    position: absolute;
+    top: 20%;
+    right: 15%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle at center, 
+        rgba(255, 255, 255, 0.8) 0%,
+        rgba(255, 255, 255, 0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+    animation: sun-glow 4s ease-in-out infinite;
+}
+
+@keyframes sun-glow {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* 云朵效果 */
+.cloud {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    filter: blur(10px);
+    animation: cloud-drift linear infinite;
+}
+
+.cloud:nth-child(1) {
+    top: 20%;
+    left: 10%;
+    width: 80px;
+    height: 40px;
+    animation-duration: 40s;
+}
+
+.cloud:nth-child(2) {
+    top: 30%;
+    right: 15%;
+    width: 100px;
+    height: 50px;
+    animation-duration: 50s;
+}
+
+.cloud:nth-child(3) {
+    top: 40%;
+    left: 20%;
+    width: 60px;
+    height: 30px;
+    animation-duration: 60s;
+}
+
+@keyframes cloud-drift {
+    0% {
+        transform: translateX(-100px);
+    }
+    100% {
+        transform: translateX(calc(100vw + 100px));
+    }
+}

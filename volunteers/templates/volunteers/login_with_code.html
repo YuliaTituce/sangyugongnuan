@@ -1,0 +1,261 @@
+﻿<!-- login_with_code.html 的修复版本 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>邮箱验证码登录 - 桑榆共暖</title>
+    <style>
+        /* 样式保持不变 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .login-form {
+            padding: 40px;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .verification-group {
+            display: flex;
+            gap: 10px;
+        }
+        .verification-group input {
+            flex: 1;
+        }
+        .btn-send-code {
+            background: #4facfe;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 14px;
+        }
+        .btn-send-code:hover {
+            background: #3a9bf5;
+        }
+        .btn-send-code:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .btn-login {
+            background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            width: 100%;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .back-link a {
+            color: #4facfe;
+            text-decoration: none;
+        }
+        .message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>邮箱验证码登录</h1>
+            <p>使用邮箱验证码快速登录</p>
+        </div>
+        <div class="login-form">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="POST" action="{% url 'login_with_code' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" id="email" class="form-control" 
+                           placeholder="请输入您的邮箱" required>
+                </div>
+                <div class="form-group">
+                    <div class="verification-group">
+                        <input type="text" name="verification_code" class="form-control" 
+                               placeholder="请输入验证码" required maxlength="6">
+                        <button type="button" class="btn-send-code" id="btn-send-code" 
+                                onclick="sendLoginCode()">发送验证码</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login">登录</button>
+            </form>
+            
+            <div class="back-link">
+                <a href="{% url 'login' %}">返回账号密码登录</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取CSRF Token的辅助函数
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // 发送验证码功能 - 修复版本
+        function sendLoginCode() {
+            console.log('sendLoginCode函数被调用');
+            
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value.trim();
+            const btn = document.getElementById('btn-send-code');
+            
+            console.log('邮箱地址:', email);
+            
+            if (!email) {
+                alert('请输入邮箱地址');
+                return;
+            }
+            
+            // 验证邮箱格式
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('请输入有效的邮箱地址（例如：example@qq.com）');
+                return;
+            }
+            
+            // 禁用按钮，开始倒计时
+            btn.disabled = true;
+            btn.style.backgroundColor = '#ccc';
+            let countdown = 60;
+            
+            // 更新按钮文本
+            const updateButtonText = () => {
+                btn.textContent = `重新发送(${countdown}s)`;
+            };
+            
+            updateButtonText();
+            
+            const timer = setInterval(() => {
+                countdown--;
+                updateButtonText();
+                
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.style.backgroundColor = '';
+                    btn.textContent = '发送验证码';
+                }
+            }, 1000);
+            
+            // 准备发送请求的数据
+            const csrfToken = getCookie('csrftoken');
+            console.log('CSRF Token:', csrfToken ? '已获取' : '未找到');
+            
+            // 创建FormData对象
+            const formData = new FormData();
+            formData.append('email', email);
+            formData.append('purpose', 'login');
+            
+            // 添加CSRF token到请求头
+            const headers = {
+                'X-CSRFToken': csrfToken
+            };
+            
+            // 发送请求到后端
+            fetch('{% url "send_code" %}', {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            })
+            .then(response => {
+                console.log('响应状态:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('服务器响应数据:', data);
+                if (data.success) {
+                    alert('✅ 验证码已发送！请检查您的邮箱。');
+                    console.log('开发模式提示：验证码功能已调用');
+                } else {
+                    alert('❌ 发送失败：' + data.message);
+                    // 如果发送失败，恢复按钮
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.style.backgroundColor = '';
+                    btn.textContent = '发送验证码';
+                }
+            })
+            .catch(error => {
+                console.error('发送验证码失败:', error);
+                alert('网络错误，请重试');
+                // 恢复按钮
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.style.backgroundColor = '';
+                btn.textContent = '发送验证码';
+            });
+        }
+    </script>
+</body>
+</html>

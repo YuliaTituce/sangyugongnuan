@@ -1,0 +1,380 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}活动详情 · {{ activity.title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="section-title mb-0" style="border-bottom: none;">
+        <i class="fas fa-calendar-check"></i> 活动详情：{{ activity.title }}
+    </div>
+    <div>
+        <a href="{% url 'admin_activities' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+        <a href="{% url 'activity_detail' activity.id %}" class="btn btn-outline-primary" target="_blank">
+            <i class="fas fa-external-link-alt"></i> 前台查看
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 左侧：活动基本信息 -->
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">基本信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_info">
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">活动标题</label>
+                            <input type="text" name="title" class="form-control" value="{{ activity.title }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">活动类型</label>
+                            <select name="activity_type" class="form-select">
+                                {% for value, label in activity_type_choices %}
+                                <option value="{{ value }}" {% if activity.activity_type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">活动描述</label>
+                        <textarea name="description" class="form-control" rows="5">{{ activity.description }}</textarea>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">开始时间</label>
+                            <input type="datetime-local" name="start_time" class="form-control" value="{{ activity.start_time|date:'Y-m-d\TH:i' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">结束时间</label>
+                            <input type="datetime-local" name="end_time" class="form-control" value="{{ activity.end_time|date:'Y-m-d\TH:i' }}">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">地点</label>
+                            <input type="text" name="location" class="form-control" value="{{ activity.location }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">最大参与人数</label>
+                            <input type="number" name="max_participants" class="form-control" value="{{ activity.max_participants }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">当前参与人数</label>
+                            <input type="number" class="form-control" value="{{ activity.current_participants }}" disabled>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存修改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 报名申请列表 -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">报名申请（{{ applications.count }}）</h5>
+            </div>
+            <div class="card-body">
+                {% if applications %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>志愿者</th>
+                                <th>报名时间</th>
+                                <th>状态</th>
+                                <th>申请说明</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'user_detail' app.volunteer.user.id %}">
+                                        {{ app.volunteer.real_name|default:app.volunteer.user.username }}
+                                    </a>
+                                </td>
+                                <td>{{ app.applied_at|date:"Y-m-d H:i" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if app.status == 'approved' %}bg-success
+                                        {% elif app.status == 'pending' %}bg-warning
+                                        {% elif app.status == 'rejected' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ app.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ app.application_notes|truncatechars:50 }}</td>
+                                <td>
+                                    {% if app.status == 'pending' %}
+                                    <form method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="approve_application">
+                                        <input type="hidden" name="application_id" value="{{ app.id }}">
+                                        <button type="submit" class="btn btn-sm btn-success">批准</button>
+                                    </form>
+                                    <!-- 拒绝报名按钮（触发模态框） -->
+                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ app.id }}">
+                                        拒绝
+                                    </button>
+                                    <!-- 拒绝理由模态框 -->
+                                    <div class="modal fade" id="rejectModal{{ app.id }}" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <form method="post">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="action" value="reject_application">
+                                                    <input type="hidden" name="application_id" value="{{ app.id }}">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">拒绝报名申请</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <label for="rejectReason{{ app.id }}" class="form-label">拒绝理由</label>
+                                                        <textarea name="reject_reason" id="rejectReason{{ app.id }}" class="form-control" rows="3" placeholder="选填，管理员可见"></textarea>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                                                        <button type="submit" class="btn btn-danger">确认拒绝</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted mb-0">暂无报名申请</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：审核、统计、快速操作 -->
+    <div class="col-md-4">
+        <!-- ========== 审核卡片 ========== -->
+        {% if activity.status == 'draft' or activity.status == 'rejected' or not activity.is_approved %}
+        <div class="card mb-4 border-warning" id="review-card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> 活动审核</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>当前审核状态：</strong>
+                    {% if activity.is_approved %}
+                        <span class="badge bg-success">已通过</span>
+                    {% else %}
+                        <span class="badge bg-warning">待审核</span>
+                    {% endif %}
+                </p>
+                {% if activity.status == 'rejected' %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> 该活动已被拒绝，拒绝理由见下方备注。
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="review">
+                    
+                    <div class="mb-3">
+                        <label for="reviewNotes" class="form-label fw-bold">审核备注</label>
+                        <textarea name="review_notes" id="reviewNotes" class="form-control" rows="3" placeholder="请输入审核意见、拒绝理由等">{{ activity.review_notes|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="action" value="approve" class="btn btn-success flex-fill" onclick="return confirm('确认通过此活动？')">
+                            <i class="fas fa-check-circle"></i> 通过
+                        </button>
+                        <button type="submit" name="action" value="need_review" class="btn btn-warning flex-fill">
+                            <i class="fas fa-edit"></i> 要求修改
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger flex-fill" onclick="return confirm('确认拒绝此活动？')">
+                            <i class="fas fa-times-circle"></i> 拒绝
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 统计信息 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">统计信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>浏览量</span>
+                        <span>{{ activity.views|default:0 }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>收藏数</span>
+                        <span>{{ favorites_count|default:0 }}</span>   <!-- 修复：不再直接调用 .favorites.count -->
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>报名成功率</span>
+                        <span>
+                            {% if activity.current_participants > 0 %}
+                            {{ activity.current_participants }}/{{ activity.max_participants }}
+                            ({{ participation_rate|floatformat:0 }}%)
+                            {% else %}0%{% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>创建时间</span>
+                        <span>{{ activity.created_at|date:"Y-m-d H:i" }}</span>
+                    </li>
+                    {% if activity.is_approved %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>审核通过时间</span>
+                        <span>{{ activity.approved_at|date:"Y-m-d H:i" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>审核人</span>
+                        <span>{{ activity.approved_by.username }}</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- 快速操作（整合状态更新） -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <!-- 状态更新下拉框（合并） -->
+                    <form method="post" class="d-flex gap-2 align-items-center">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="update_status">
+                        <select name="status" class="form-select">
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if activity.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary">更新状态</button>
+                    </form>
+
+                    {% if not activity.is_approved %}
+                    <a href="{% url 'review_profile' activity.organizer.id %}" class="btn btn-success">
+                        <i class="fas fa-clipboard-check"></i> 审核组织者资料
+                    </a>
+                    {% endif %}
+                    
+                    <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#notifyModal">
+                        <i class="fas fa-bell"></i> 通知参与者
+                    </button>
+                    
+                    {% if activity.status == 'published' or activity.status == 'ongoing' %}
+                    <form method="post" action="{% url 'batch_action_activities' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="cancel">
+                        <input type="hidden" name="selected_activities" value="{{ activity.id }}">
+                        <button type="submit" class="btn btn-danger w-100" onclick="return confirm('确定要取消此活动吗？')">
+                            <i class="fas fa-ban"></i> 取消活动
+                        </button>
+                    </form>
+                    {% endif %}
+
+                    <!-- 删除活动按钮（新增） -->
+                    <form method="post" action="{% url 'delete_activity' activity.id %}" onsubmit="return confirm('⚠️ 删除活动不可恢复，确定要删除吗？');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <i class="fas fa-trash-alt"></i> 删除活动
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 历史审核记录 -->
+{% if activity.review_logs.exists %}
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-history"></i> 审核历史</h5>
+    </div>
+    <div class="card-body">
+        <ul class="list-group list-group-flush">
+            {% for log in activity.review_logs.all|slice:":5" %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span>
+                    <span class="badge 
+                        {% if log.action == 'approve' %}bg-success
+                        {% elif log.action == 'reject' %}bg-danger
+                        {% elif log.action == 'need_review' %}bg-warning
+                        {% else %}bg-secondary{% endif %} me-2">
+                        {{ log.get_action_display }}
+                    </span>
+                    {{ log.performed_by.username }} 于 {{ log.performed_at|date:"Y-m-d H:i" }}
+                    {% if log.notes %}<br><small class="text-muted">{{ log.notes }}</small>{% endif %}
+                </span>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- 通知模态框（修改为真实表单） -->
+<div class="modal fade" id="notifyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'send_activity_notification' activity.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">通知活动参与者</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="notificationType" class="form-label">通知类型</label>
+                        <select name="type" id="notificationType" class="form-select">
+                            <option value="reminder">活动提醒</option>
+                            <option value="change">活动变更</option>
+                            <option value="cancellation">活动取消</option>
+                            <option value="other">其他通知</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notificationContent" class="form-label">通知内容</label>
+                        <textarea name="content" id="notificationContent" class="form-control" rows="4" placeholder="请输入通知内容..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">发送通知</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 移除内联的 sendNotification 脚本，不需要了 -->
+{% endblock %}

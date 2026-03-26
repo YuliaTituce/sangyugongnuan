@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>活动策划者认证 - 桑榆共暖</title>
+    <style>
+        /* 复用志愿者的样式，可以稍作调整 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .verification-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .verification-header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .verification-header h1 {
+            color: #2196F3;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .verification-header p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            margin: 40px 0;
+        }
+        
+        .progress-steps:before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 1;
+        }
+        
+        .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+        
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            background: #e0e0e0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .step.active .step-circle {
+            background: #2196F3;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .verification-form {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        
+        .form-section {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            color: #2196F3;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #2196F3;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #444;
+        }
+        
+        .form-label.required:after {
+            content: ' *';
+            color: #f44336;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #2196F3;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-text {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .file-upload {
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-upload:hover {
+            border-color: #2196F3;
+        }
+        
+        .file-upload input {
+            display: none;
+        }
+        
+        .file-upload-label {
+            display: block;
+            color: #666;
+        }
+        
+        .file-upload-label i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #2196F3;
+        }
+        
+        .terms-agreement {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 30px 0;
+        }
+        
+        .terms-agreement label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+        }
+        
+        .terms-agreement input[type="checkbox"] {
+            margin-right: 10px;
+            margin-top: 4px;
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-submit {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            transition: background 0.3s;
+        }
+        
+        .btn-submit:hover {
+            background: #1976D2;
+        }
+        
+        .btn-back {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .btn-back:hover {
+            background: #e9e9e9;
+        }
+        
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .organization-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .org-type-option {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .org-type-option:hover {
+            border-color: #2196F3;
+            background: #f0f9ff;
+        }
+        
+        .org-type-option.selected {
+            border-color: #2196F3;
+            background: #2196F3;
+            color: white;
+        }
+        
+        .org-type-option input {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .verification-container {
+                padding: 10px;
+            }
+            
+            .verification-header,
+            .verification-form {
+                padding: 20px;
+            }
+            
+            .progress-steps {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .progress-steps:before {
+                display: none;
+            }
+            
+            .step {
+                display: flex;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            
+            .step-circle {
+                margin: 0 15px 0 0;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+            
+            .organization-types {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="verification-container">
+        <div class="verification-header">
+            <h1>活动策划者身份认证</h1>
+            <p>请填写组织/机构信息，以便发布和管理志愿服务活动。</p>
+            
+            <div class="progress-steps">
+                <div class="step">
+                    <div class="step-circle">1</div>
+                    <div class="step-label">选择身份</div>
+                </div>
+                <div class="step active">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">填写信息</div>
+                </div>
+                <div class="step">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">等待审核</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="verification-form">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- 组织信息 -->
+                <div class="form-section">
+                    <h2 class="section-title">组织/机构信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.organization_name.label }}</label>
+                        {{ form.organization_name }}
+                        {% if form.organization_name.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.organization_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.organization_type.label }}</label>
+                        {{ form.organization_type }}
+                        <div class="organization-types" id="orgTypeOptions">
+                            <label class="org-type-option" onclick="selectOrgType('ngo')">
+                                <input type="radio" name="organization_type" value="ngo">
+                                非政府组织 (NGO)
+                            </label>
+                            <label class="org-type-option" onclick="selectOrgType('school')">
+                                <input type="radio" name="organization_type" value="school">
+                                学校
+                            </label>
+                            <label class="org-type-option" onclick="selectOrgType('company')">
+                                <input type="radio" name="organization_type" value="company">
+                                企业
+                            </label>
+                            <label class="org-type-option" onclick="selectOrgType('community')">
+                                <input type="radio" name="organization_type" value="community">
+                                社区组织
+                            </label>
+                            <label class="org-type-option" onclick="selectOrgType('government')">
+                                <input type="radio" name="organization_type" value="government">
+                                政府部门
+                            </label>
+                            <label class="org-type-option" onclick="selectOrgType('other')">
+                                <input type="radio" name="organization_type" value="other">
+                                其他
+                            </label>
+                        </div>
+                        {% if form.organization_type.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.organization_type.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.organization_description.label }}</label>
+                        {{ form.organization_description }}
+                        <div class="form-text">请详细描述您的组织/机构，包括主要业务、服务对象等</div>
+                    </div>
+                </div>
+                
+                <!-- 负责人信息 -->
+                <div class="form-section">
+                    <h2 class="section-title">负责人信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.real_name.label }}</label>
+                        {{ form.real_name }}
+                        {% if form.real_name.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.real_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.phone_number.label }}</label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.phone_number.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.id_card_number.label }}</label>
+                        {{ form.id_card_number }}
+                        {% if form.id_card_number.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.id_card_number.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 联系信息 -->
+                <div class="form-section">
+                    <h2 class="section-title">联系信息</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.current_address.label }}</label>
+                        {{ form.current_address }}
+                        <div class="form-text">请填写组织办公地址</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.emergency_contact.label }}</label>
+                        {{ form.emergency_contact }}
+                        <div class="form-text">备用联系人姓名</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">{{ form.emergency_phone.label }}</label>
+                        {{ form.emergency_phone }}
+                        <div class="form-text">备用联系人电话</div>
+                    </div>
+                </div>
+                
+                <!-- 文件上传 -->
+                <div class="form-section">
+                    <h2 class="section-title">证明文件</h2>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.organization_certificate.label }}</label>
+                        <div class="file-upload" onclick="document.getElementById('id_organization_certificate').click()">
+                            <input type="file" name="organization_certificate" id="id_organization_certificate" accept="image/*,.pdf">
+                            <label class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div>点击上传组织证明文件</div>
+                                <div class="form-text">如营业执照、社会团体登记证书等，支持JPG、PNG、PDF格式，最大5MB</div>
+                            </label>
+                        </div>
+                        {% if form.organization_certificate.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.organization_certificate.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label required">{{ form.identity_document.label }}</label>
+                        <div class="file-upload" onclick="document.getElementById('id_identity_document').click()">
+                            <input type="file" name="identity_document" id="id_identity_document" accept="image/*,.pdf">
+                            <label class="file-upload-label">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div>点击上传负责人身份证明</div>
+                                <div class="form-text">支持JPG、PNG、PDF格式，最大5MB</div>
+                            </label>
+                        </div>
+                        {% if form.identity_document.errors %}
+                            <div class="form-text" style="color: #f44336;">
+                                {{ form.identity_document.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- 条款同意 -->
+                <div class="terms-agreement">
+                    <label>
+                        {{ form.agree_terms }}
+                        <div>
+                            {{ form.agree_terms.label }}
+                            <div class="form-text">
+                                我们承诺保护您的个人信息安全，详细信息请查看
+                                <a href="#" style="color: #2196F3;">《个人信息保护政策》</a>
+                            </div>
+                        </div>
+                    </label>
+                    {% if form.agree_terms.errors %}
+                        <div class="form-text" style="color: #f44336; margin-top: 10px;">
+                            {{ form.agree_terms.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- 按钮 -->
+                <div class="btn-container">
+                    <a href="{% url 'role_selection' %}" class="btn-back">
+                        返回重新选择
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-paper-plane"></i> 提交认证申请
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // 组织类型选择
+        function selectOrgType(type) {
+            const options = document.querySelectorAll('.org-type-option');
+            options.forEach(opt => {
+                opt.classList.remove('selected');
+                const radio = opt.querySelector('input[type="radio"]');
+                radio.checked = false;
+            });
+            
+            const selectedOption = document.querySelector(`.org-type-option input[value="${type}"]`);
+            if (selectedOption) {
+                selectedOption.checked = true;
+                selectedOption.parentElement.classList.add('selected');
+            }
+        }
+        
+        // 初始化组织类型选择
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentType = document.querySelector('select[name="organization_type"]').value;
+            if (currentType) {
+                selectOrgType(currentType);
+            }
+        });
+        
+        // 文件上传预览
+        function setupFileUpload(inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const fileSize = file.size / 1024 / 1024; // MB
+                        if (fileSize > 5) {
+                            alert('文件大小不能超过5MB');
+                            e.target.value = '';
+                        }
+                    }
+                });
+            }
+        }
+        
+        setupFileUpload('id_organization_certificate');
+        setupFileUpload('id_identity_document');
+        
+        // 表单验证
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const terms = document.querySelector('input[name="agree_terms"]');
+            if (!terms.checked) {
+                e.preventDefault();
+                alert('请同意个人信息保护政策');
+                return false;
+            }
+            return true;
+        });
+    </script>
+</body>
+</html>

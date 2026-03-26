@@ -1,0 +1,108 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}数据管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-database"></i> 数据管理
+</div>
+
+<!-- 数据统计卡片 -->
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">用户</h5>
+                <p class="display-6">{{ stats.total_users }}</p>
+                <small class="text-muted">总用户数</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">活动</h5>
+                <p class="display-6">{{ stats.total_activities }}</p>
+                <small class="text-muted">总活动数</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">报名</h5>
+                <p class="display-6">{{ stats.total_applications }}</p>
+                <small class="text-muted">总报名记录</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">反馈</h5>
+                <p class="display-6">{{ stats.total_feedback }}</p>
+                <small class="text-muted">用户反馈数</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 其他统计表 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">数据库信息</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>数据库大小：</strong> {{ db_size }}</p>
+                <p><strong>验证码记录：</strong> {{ stats.total_email_codes }}</p>
+                <p><strong>认证日志：</strong> {{ stats.total_verification_logs }}</p>
+                <p><strong>访问日志：</strong> {{ stats.total_data_access_logs }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">内容数据</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>公告：</strong> {{ stats.total_announcements }}</p>
+                <p><strong>操作指南：</strong> {{ stats.total_guides }}</p>
+                <p><strong>用户资料：</strong> {{ stats.total_profiles }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 清理数据表单 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">清理过期数据</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'cleanup_data' %}" class="row g-3">
+            {% csrf_token %}
+            <div class="col-md-4">
+                <label class="form-label">数据类型</label>
+                <select name="cleanup_type" class="form-select">
+                    <option value="verification_codes">过期验证码</option>
+                    <option value="old_logs">30天前旧日志</option>
+                    <option value="completed_activities">已完成活动（结束30天后）</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">保留天数</label>
+                <input type="number" name="days" class="form-control" value="30">
+            </div>
+            <div class="col-md-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-warning" onclick="return confirm('确认清理选中的数据？')">
+                    <i class="fas fa-trash"></i> 立即清理
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

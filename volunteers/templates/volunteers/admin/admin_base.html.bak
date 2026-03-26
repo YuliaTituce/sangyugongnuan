@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5">
+    <title>{% block title %}管理员控制台 · 桑榆共暖{% endblock %}</title>
+    <!-- Bootstrap 5 核心 CSS（兼容现有页面） -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 全局管理员自定义样式（覆盖/补充 Bootstrap） -->
+    <style>
+        /* ========== 全局管理后台样式 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            color: #1e293b;
+            line-height: 1.5;
+        }
+
+        /* ----- 头部导航（完全自定义）----- */
+        .admin-header {
+            background: linear-gradient(145deg, #0f1a4e, #1a237e);
+            color: white;
+            padding: 0 32px;
+            height: 70px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 14px rgba(26, 35, 126, 0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-header h1 {
+            font-size: 22px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0;
+        }
+
+        .admin-header h1 i {
+            font-size: 26px;
+            color: #bbdefb;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info span {
+            font-size: 15px;
+            background: rgba(255,255,255,0.15);
+            padding: 8px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-logout {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(220,53,69,0.2);
+        }
+
+        .btn-logout:hover {
+            background: #b02a37;
+            box-shadow: 0 6px 12px rgba(176,42,55,0.25);
+            transform: translateY(-1px);
+            color: white;
+        }
+
+        /* ----- 主体容器（侧边栏 + 内容）----- */
+        .admin-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* ----- 侧边栏（深色现代风格）----- */
+        .admin-sidebar {
+            width: 280px;
+            background: #ffffff;
+            border-right: 1px solid #e9ecef;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.02);
+            padding: 24px 0;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 0;
+            margin: 4px 16px;
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .menu-item a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: #334155;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 450;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+
+        .menu-item a i {
+            width: 26px;
+            font-size: 18px;
+            color: #5f6c84;
+            margin-right: 12px;
+            text-align: center;
+        }
+
+        .menu-item.active a {
+            background: linear-gradient(90deg, #e8eaf6, #ffffff);
+            color: #1a237e;
+            font-weight: 600;
+            border-left: 4px solid #1a237e;
+        }
+
+        .menu-item.active a i {
+            color: #1a237e;
+        }
+
+        .menu-item:not(.active):hover a {
+            background: #f1f5f9;
+            color: #0f1a4e;
+        }
+
+        /* ----- 主内容区域 ----- */
+        .admin-content {
+            flex: 1;
+            padding: 32px 36px;
+            background: #f8fafc;
+            overflow-x: auto;
+        }
+
+        /* 消息提示 */
+        .messages {
+            margin-bottom: 28px;
+        }
+
+        .message {
+            padding: 16px 24px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.03);
+            border-left: 6px solid;
+        }
+
+        .message.success {
+            background: #e8f5e9;
+            color: #1e4a2e;
+            border-left-color: #2e7d32;
+        }
+
+        .message.error {
+            background: #ffebee;
+            color: #831e2a;
+            border-left-color: #c62828;
+        }
+
+        /* 表格公用样式（覆盖 Bootstrap）*/
+        .table-container {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 16px 12px;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 600;
+            font-size: 14px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid #ecf1f7;
+            vertical-align: middle;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff8e5;
+            color: #b25f00;
+            border: 1px solid #ffd966;
+        }
+
+        .status-approved {
+            background: #e3f2e9;
+            color: #0b5e42;
+            border: 1px solid #a5d6c4;
+        }
+
+        .status-rejected {
+            background: #fee9e7;
+            color: #aa2e2e;
+            border: 1px solid #fbc4c0;
+        }
+
+        .btn-action {
+            padding: 8px 16px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            border: none;
+        }
+
+        .btn-review {
+            background: #1a237e;
+            color: white;
+            box-shadow: 0 4px 10px rgba(26,35,126,0.15);
+        }
+
+        .btn-review:hover {
+            background: #0f1a4e;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .btn-edit {
+            background: #0d9488;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #b91c1c;
+            color: white;
+        }
+
+        /* 其他通用组件 */
+        .section-title {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #0f1a4e;
+            border-bottom: 3px solid #e0e7ff;
+            padding-bottom: 12px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .admin-sidebar {
+                width: 240px;
+            }
+        }
+        @media (max-width: 992px) {
+            .admin-container {
+                flex-direction: column;
+            }
+            .admin-sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .admin-content {
+                padding: 24px;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- 头部导航（固定） -->
+    <div class="admin-header">
+        <h1>
+            <i class="fas fa-hands-helping"></i> 桑榆共暖 · 管理控制台
+        </h1>
+        <div class="user-info">
+            <span><i class="fas fa-user-shield"></i> {{ request.user.username }}</span>
+            <a href="{% url 'admin_logout' %}" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> 退出登录
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-container">
+        <!-- 侧边栏导航（自动高亮） -->
+        <div class="admin-sidebar">
+            <ul class="sidebar-menu">
+                {% with request.resolver_match.url_name as url_name %}
+                <li class="menu-item {% if url_name == 'admin_dashboard' %}active{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}"><i class="fas fa-tachometer-alt"></i> 仪表盘</a>
+                </li>
+                <li class="menu-item {% if url_name == 'admin_dashboard' and request.GET.section == 'pending' %}active{% endif %}">
+                    <a href="{% url 'admin_dashboard' %}#pending-section"><i class="fas fa-user-check"></i> 认证审核</a>
+                </li>
+                <li class="menu-item {% if url_name == 'user_management' or url_name == 'user_detail' %}active{% endif %}">
+                    <a href="{% url 'user_management' %}"><i class="fas fa-users"></i> 用户管理</a>
+                </li>
+                <li class="menu-item {% if url_name == 'admin_activities' %}active{% endif %}">
+                    <a href="{% url 'admin_activities' %}"><i class="fas fa-calendar-alt"></i> 活动管理</a>
+                </li>
+                <li class="menu-item {% if url_name == 'admin_statistics' %}active{% endif %}">
+                    <a href="{% url 'admin_statistics' %}"><i class="fas fa-chart-bar"></i> 数据统计</a>
+                </li>
+                <li class="menu-item {% if url_name == 'content_management' %}active{% endif %}">
+                    <a href="{% url 'content_management' %}"><i class="fas fa-newspaper"></i> 内容管理</a>
+                </li>
+                <li class="menu-item {% if url_name == 'feedback_management' %}active{% endif %}">
+                    <a href="{% url 'feedback_management' %}"><i class="fas fa-comments"></i> 反馈管理</a>
+                </li>
+                <li class="menu-item {% if url_name == 'system_settings' %}active{% endif %}">
+                    <a href="{% url 'system_settings' %}"><i class="fas fa-cog"></i> 系统设置</a>
+                </li>
+                {% endwith %}
+            </ul>
+        </div>
+
+        <!-- 内容区块（各页面自定义） -->
+        <div class="admin-content">
+            <!-- Django messages 统一显示 -->
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}
+            <!-- 子模板填充主要区域 -->
+            {% endblock %}
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS（依赖 Popper） -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 全局 JavaScript -->
+    <script>
+        // 全选/取消通用函数
+        function setupSelectAll(selectAllId, checkboxName, countSpanId) {
+            const selectAll = document.getElementById(selectAllId);
+            if (selectAll) {
+                selectAll.addEventListener('click', function(e) {
+                    const checkboxes = document.querySelectorAll(`input[name="${checkboxName}"]`);
+                    checkboxes.forEach(cb => cb.checked = e.target.checked);
+                    if (countSpanId) updateCount(checkboxName, countSpanId);
+                });
+            }
+            function updateCount(name, spanId) {
+                const checked = document.querySelectorAll(`input[name="${name}"]:checked`).length;
+                const span = document.getElementById(spanId);
+                if (span) span.textContent = `📌 已选择 ${checked} 项`;
+            }
+            document.querySelectorAll(`input[name="${checkboxName}"]`).forEach(cb => {
+                cb.addEventListener('change', function() {
+                    if (countSpanId) updateCount(checkboxName, countSpanId);
+                });
+            });
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

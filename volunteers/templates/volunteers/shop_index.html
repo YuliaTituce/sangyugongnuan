@@ -1,0 +1,82 @@
+{% extends 'volunteers/base.html' %}
+{% load static %}
+
+{% block title %}积分商城 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">积分商城</h2>
+            {% if points %}
+                <div class="alert alert-info">
+                    您的可用积分：<strong>{{ points.balance }}</strong>
+                </div>
+            {% else %}
+                <div class="alert alert-warning">
+                    您还没有积分，快去参与活动获取积分吧！
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        {% for item in items %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-muted">暂无图片</span>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.name }}</h5>
+                    <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                    <p class="card-text">
+                        <span class="badge bg-primary">所需积分：{{ item.points_required }}</span>
+                        {% if item.stock > 0 %}
+                            <span class="badge bg-success">库存：{{ item.stock }}</span>
+                        {% elif item.stock == -1 %}
+                            <span class="badge bg-info">库存充足</span>
+                        {% else %}
+                            <span class="badge bg-danger">已售罄</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-footer bg-transparent">
+                    {% if item.stock != 0 %}
+                        <form method="post" action="{% url 'shop_exchange' item.id %}" onsubmit="return confirm('确定兑换 {{ item.name }} 吗？将消耗 {{ item.points_required }} 积分。');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-primary w-100" {% if not points or points.balance < item.points_required %}disabled{% endif %}>
+                                立即兑换
+                            </button>
+                        </form>
+                        {% if points and points.balance < item.points_required %}
+                            <p class="text-danger mt-2 mb-0">积分不足</p>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-secondary w-100" disabled>已售罄</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center py-5">
+                <i class="fas fa-gift fa-3x mb-3"></i>
+                <h4>暂无商品</h4>
+                <p>敬请期待更多好物上架！</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'shop_orders' %}" class="btn btn-outline-primary">查看我的兑换记录</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

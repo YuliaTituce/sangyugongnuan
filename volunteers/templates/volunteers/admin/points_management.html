@@ -1,0 +1,141 @@
+{% extends 'volunteers/admin/admin_base.html' %}
+{% load static %}
+
+{% block title %}积分管理 · 桑榆共暖{% endblock %}
+
+{% block content %}
+<div class="section-title">
+    <i class="fas fa-coins"></i> 积分管理
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title">总用户数</h5>
+                <p class="card-text display-6">{{ total_users }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title">有积分用户</h5>
+                <p class="card-text display-6">{{ users_with_points }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title">总获取积分</h5>
+                <p class="card-text display-6">{{ total_points_earned }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5 class="card-title">当前可用积分</h5>
+                <p class="card-text display-6">{{ total_points_balance }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 手动调整积分 -->
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">手动调整用户积分</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'adjust_points' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">用户名</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">积分变动数量</label>
+                        <input type="number" name="amount" class="form-control" required>
+                        <div class="form-text">正数为奖励，负数为惩罚扣除</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">备注</label>
+                        <textarea name="remark" class="form-control" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">提交调整</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速链接 -->
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">管理功能</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="{% url 'star_level_config' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-star me-2"></i> 星级评定配置
+                    </a>
+                    <a href="{% url 'shop_item_list' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-gift me-2"></i> 商品管理
+                    </a>
+                    <a href="{% url 'admin_shop_orders' %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shopping-cart me-2"></i> 订单管理
+                    </a> 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 近期积分变动记录 -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">近期积分变动记录</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>用户</th>
+                        <th>类型</th>
+                        <th>变动数量</th>
+                        <th>变动后可用</th>
+                        <th>操作人</th>
+                        <th>备注</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in recent_transactions %}
+                    <tr>
+                        <td>{{ t.user.username }}</td>
+                        <td>{{ t.get_transaction_type_display }}</td>
+                        <td class="{% if t.amount > 0 %}text-success{% elif t.amount < 0 %}text-danger{% endif %}">
+                            {{ t.amount }}
+                        </td>
+                        <td>{{ t.balance_after }}</td>
+                        <td>{{ t.operator.username|default:"-" }}</td>
+                        <td>{{ t.remark|truncatechars:20 }}</td>
+                        <td>{{ t.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">暂无记录</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

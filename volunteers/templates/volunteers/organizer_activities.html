@@ -1,0 +1,102 @@
+{% extends 'volunteers/base.html' %}
+{% load static %}
+
+{% block title %}我发布的活动 · 桑榆共暖{% endblock %}
+
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>我发布的活动</h2>
+        <a href="{% url 'create_activity' %}" class="btn btn-success">+ 发布新活动</a>
+    </div>
+
+    {% if page_obj %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>标题</th>
+                        <th>类型</th>
+                        <th>开始时间</th>
+                        <th>报名人数</th>
+                        <th>状态</th>
+                        <th>审核状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in page_obj %}
+                    <tr>
+                        <td>{{ activity.title }}</td>
+                        <td>{{ activity.get_activity_type_display }}</td>
+                        <td>{{ activity.start_time|date:"Y-m-d H:i" }}</td>
+                        <td>{{ activity.current_participants }}/{{ activity.max_participants }}</td>
+                        <td>
+                            {% if activity.status == 'draft' %}
+                                <span class="badge bg-secondary">草稿</span>
+                            {% elif activity.status == 'published' %}
+                                <span class="badge bg-success">已发布</span>
+                            {% elif activity.status == 'ongoing' %}
+                                <span class="badge bg-primary">进行中</span>
+                            {% elif activity.status == 'completed' %}
+                                <span class="badge bg-info">已完成</span>
+                            {% elif activity.status == 'cancelled' %}
+                                <span class="badge bg-danger">已取消</span>
+                            {% elif activity.status == 'rejected' %}
+                                <span class="badge bg-warning">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if activity.is_approved %}
+                                <span class="badge bg-success">已通过</span>
+                            {% else %}
+                                <span class="badge bg-warning">待审核</span>
+                            {% endif %}
+                        </td>
+                    	<td>
+    			    <div class="btn-group btn-group-sm">
+        			<a href="{% url 'activity_detail' activity.id %}" class="btn btn-outline-primary">查看</a>
+        			<a href="{% url 'edit_activity' activity.id %}" class="btn btn-outline-secondary">编辑</a>
+        		    	{% if activity.status == 'draft' or activity.status == 'rejected' %}
+        			<form method="POST" action="{% url 'delete_activity' activity.id %}" style="display:inline;" onsubmit="return confirm('确定删除此活动吗？');">
+            			    {% csrf_token %}
+            			    <button type="submit" class="btn btn-outline-danger">删除</button>
+        			</form>
+        			{% endif %}
+    			    </div>
+			</td>
+		    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 分页 -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; 首页</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">上一页</a></li>
+                    {% endif %}
+
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">下一页</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">末页 &raquo;</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-calendar-times fa-3x mb-3"></i>
+            <h4>您还没有发布过任何活动</h4>
+            <p>点击下方按钮发布您的第一个志愿活动吧！</p>
+            <a href="{% url 'create_activity' %}" class="btn btn-primary mt-2">发布活动</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

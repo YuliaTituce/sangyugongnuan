@@ -1,0 +1,128 @@
+{% extends "volunteers/admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}审核资料 · {{ profile.real_name|default:profile.user.username }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="section-title mb-0" style="border-bottom: none;">
+        <i class="fas fa-clipboard-check"></i> 审核认证资料
+    </div>
+    <a href="{% url 'admin_dashboard' %}#pending-section" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> 返回仪表盘
+    </a>
+</div>
+
+<div class="row">
+    <!-- 左侧：用户信息 -->
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">申请人信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-4">
+                    <div class="rounded-circle bg-light p-3 me-3">
+                        <i class="fas fa-user-circle fa-3x" style="color: #1a237e;"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1">{{ profile.real_name|default:profile.user.username }}</h4>
+                        <span class="badge 
+                            {% if profile.role == 'volunteer' %}bg-success
+                            {% elif profile.role == 'organizer' %}bg-info
+                            {% else %}bg-secondary{% endif %}">
+                            {{ profile.get_role_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <table class="table table-sm">
+                    <tr>
+                        <th style="width: 35%">用户名</th>
+                        <td>{{ profile.user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>邮箱</th>
+                        <td>{{ profile.user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>手机号</th>
+                        <td>{{ profile.phone_number|default:"未填写" }}</td>
+                    </tr>
+                    <tr>
+                        <th>注册时间</th>
+                        <td>{{ profile.user.date_joined|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>提交时间</th>
+                        <td>{{ profile.submitted_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：审核表单 -->
+    <div class="col-md-7">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">审核操作</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- 认证资料展示（根据角色动态）-->
+                    <div class="mb-4">
+                        <h6 class="fw-bold">提交的认证资料</h6>
+                        <div class="bg-light p-3 rounded">
+                            {% if profile.role == 'volunteer' %}
+                            <p><strong>志愿服务经历：</strong><br>{{ profile.volunteer_experience|default:"未提供" }}</p>
+                            <p><strong>技能特长：</strong><br>{{ profile.skills|default:"未提供" }}</p>
+                            <p><strong>紧急联系人：</strong><br>{{ profile.emergency_contact|default:"未提供" }}</p>
+                            {% elif profile.role == 'organizer' %}
+                            <p><strong>组织/单位名称：</strong><br>{{ profile.organization_name|default:"未提供" }}</p>
+                            <p><strong>组织简介：</strong><br>{{ profile.organization_description|default:"未提供" }}</p>
+                            <p><strong>统一社会信用代码：</strong><br>{{ profile.credit_code|default:"未提供" }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- 审核备注 -->
+                    <div class="mb-3">
+                        <label for="reviewNotes" class="form-label fw-bold">审核备注</label>
+                        <textarea name="review_notes" id="reviewNotes" class="form-control" rows="4" placeholder="请输入审核意见、需补充的资料说明等">{{ profile.review_notes|default:'' }}</textarea>
+                    </div>
+
+                    <!-- 操作按钮 -->
+                    <div class="d-flex gap-3">
+                        <button type="submit" name="action" value="approve" class="btn btn-success flex-fill" onclick="return confirm('确认通过该认证申请？')">
+                            <i class="fas fa-check-circle"></i> 通过
+                        </button>
+                        <button type="submit" name="action" value="needs_review" class="btn btn-warning flex-fill">
+                            <i class="fas fa-edit"></i> 要求补充
+                        </button>
+                        <button type="submit" name="action" value="reject" class="btn btn-danger flex-fill" onclick="return confirm('确认拒绝该认证申请？')">
+                            <i class="fas fa-times-circle"></i> 拒绝
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 历史审核记录 -->
+        {% if profile.reviewed_at %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">最近审核记录</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>审核人：</strong> {{ profile.reviewed_by.username }}</p>
+                <p><strong>审核时间：</strong> {{ profile.reviewed_at|date:"Y-m-d H:i" }}</p>
+                <p><strong>审核备注：</strong> {{ profile.review_notes|default:"无" }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

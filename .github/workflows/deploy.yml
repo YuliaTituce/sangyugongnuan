@@ -2,17 +2,15 @@ name: Deploy to Tencent Cloud Lighthouse
 
 on:
   push:
-    branches: [ "main" ]   # 你的主分支名称
+    branches: [ "main" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      # 1. 拉取最新代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2. 将代码同步到服务器（覆盖旧文件）
       - name: Sync files to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -20,11 +18,10 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "./*"                     # 同步整个项目目录
-          target: "/root/sygn"   # 服务器上的项目路径
+          source: "./*"
+          target: "/home/deployer/sygn"
           overwrite: true
 
-      # 3. 在服务器上执行 Docker 重建和重启命令
       - name: Rebuild and restart Docker containers
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -33,12 +30,15 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd /var/www/your-project
-            # 停止并移除旧容器（可选，docker-compose up 时会自动处理）
-            docker-compose down
-            # 重新构建镜像（--no-cache 可避免缓存问题，按需使用）
-            docker-compose build --no-cache
-            # 启动容器（-d 后台运行）
-            docker-compose up -d
-            # 清理无用的镜像和容器（可选）
-            docker system prune -f
+            cd /home/deployer/sygn
+            # 使用 docker compose V2 命令（若你的服务器是 V1 请改回 docker-compose）
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d
+            # 等待数据库启动（如果需要）
+            sleep 5
+            # 执行 Django 迁移和静态文件收集（请将 web 替换为你的服务名）
+            docker compose exec web python manage.py migrate --noinput
+            docker compose exec web python manage.py collectstatic --noinput
+            # 只清理悬空镜像，避免误删
+            docker image prune -f

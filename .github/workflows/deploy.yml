@@ -1,0 +1,44 @@
+name: Deploy to Tencent Cloud Lighthouse
+
+on:
+  push:
+    branches: [ "main" ]   # 你的主分支名称
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取最新代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. 将代码同步到服务器（覆盖旧文件）
+      - name: Sync files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          source: "./*"                     # 同步整个项目目录
+          target: "/root/sygn"   # 服务器上的项目路径
+          overwrite: true
+
+      # 3. 在服务器上执行 Docker 重建和重启命令
+      - name: Rebuild and restart Docker containers
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          port: ${{ secrets.SERVER_PORT }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/your-project
+            # 停止并移除旧容器（可选，docker-compose up 时会自动处理）
+            docker-compose down
+            # 重新构建镜像（--no-cache 可避免缓存问题，按需使用）
+            docker-compose build --no-cache
+            # 启动容器（-d 后台运行）
+            docker-compose up -d
+            # 清理无用的镜像和容器（可选）
+            docker system prune -f
